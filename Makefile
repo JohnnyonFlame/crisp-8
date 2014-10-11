@@ -8,8 +8,7 @@ CFLAGS+=$(SDL_CFLAGS) -O2 -ggdb -Wall -Wno-missing-braces
 LDFLAGS+=$(SDL_LDFLAGS)
 
 ifneq (, $(findstring MINGW32, $(shell uname -s)))
-	CFLAGS+=-DWINDOWS -O2
-	LDFLAGS+=
+	CFLAGS+=-DWINDOWS
 	TARGET=shit8.exe
 	CC=mingw32-gcc
 endif

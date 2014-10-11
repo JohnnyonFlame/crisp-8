@@ -1,4 +1,4 @@
-SRC=main.c instruction.c font.c
+SRC=main.c instruction.c font.c chip8.c
 OBJ=$(patsubst %.c, %.o, $(SRC))
 
 SDL_CFLAGS=$(shell sdl-config --cflags)

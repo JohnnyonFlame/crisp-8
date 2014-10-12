@@ -10,7 +10,4 @@ void chip8_doTimers(Chip8 *chip);
 uint8_t chip8_doEvents(Chip8 *chip, int wait);
 uint8_t chip8_getKey(SDLKey key);
 
-#define SIZE_SPR_W 5
-#define SIZE_SPR_H 5
-
 #endif //__CHIP8_H__

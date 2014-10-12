@@ -54,6 +54,9 @@ void chip8_reset(Chip8 *chip)
 	chip->sp = 0;
 }
 
+#define SIZE_SPR_W 5
+#define SIZE_SPR_H 5
+
 #define PHOSPHOR_FG_R (25 << 8)
 #define PHOSPHOR_FG_G (192 << 8)
 #define PHOSPHOR_FG_B (25 << 8)

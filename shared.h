@@ -40,9 +40,6 @@ typedef struct Chip8
 #define LO_12(a)  ((a)		  & 0x0FFF)
 #define LO_8(a)   ((a)		  & 0x00FF)
 
-#define SIZE_SPR_W 5
-#define SIZE_SPR_H 5
-
 uint8_t chip8_doEvents(Chip8 *chip, int wait);
 
 #endif //__SHARED_H__

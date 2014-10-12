@@ -54,8 +54,8 @@ void chip8_reset(Chip8 *chip)
 	chip->sp = 0;
 }
 
-#define PHOSPHOR_FG_R (192 << 8)
-#define PHOSPHOR_FG_G (25 << 8)
+#define PHOSPHOR_FG_R (25 << 8)
+#define PHOSPHOR_FG_G (192 << 8)
 #define PHOSPHOR_FG_B (25 << 8)
 #define PHOSPHOR_BG_R (25 << 8)
 #define PHOSPHOR_BG_G (52 << 8)
@@ -85,6 +85,16 @@ void chip8_flipSurface_fade(Chip8 *chip)
 			bg = ((PHOSPHOR_C << 8) - fg) / PHOSPHOR_C;
 			fg /= PHOSPHOR_C;
 			
+			/*				
+				RGB Channels are calculated as
+					colour = (fg * coef) + (bg * inverse_coef)
+				and then they are shifted and or'd, ignore the crazy bitshift
+				insanity. it's used to do 'proper' divisions without making use
+				of floating point math.
+				
+				We store the fade coeffient [0-0xFF] on the alpha channel for
+				future fade passes.
+			*/
 			c = ((c|p) << 24)
 				| ((((fg * PHOSPHOR_FG_R) >> 16) << 16) +
 				   (((bg * PHOSPHOR_BG_R) >> 16) << 16))

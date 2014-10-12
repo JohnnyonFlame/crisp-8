@@ -57,9 +57,9 @@ void chip8_reset(Chip8 *chip)
 #define PHOSPHOR_FG_R (25 << 8)
 #define PHOSPHOR_FG_G (192 << 8)
 #define PHOSPHOR_FG_B (25 << 8)
-#define PHOSPHOR_BG_R (25 << 8)
+#define PHOSPHOR_BG_R (12 << 8)
 #define PHOSPHOR_BG_G (52 << 8)
-#define PHOSPHOR_BG_B (25 << 8)
+#define PHOSPHOR_BG_B (12 << 8)
 #define PHOSPHOR_C (255 << 8)
 
 #define PHOSPHOR_DELTA 32
@@ -98,8 +98,8 @@ void chip8_flipSurface_fade(Chip8 *chip)
 				future fade passes.
 			*/
 			c = ((c|p) << 24)
-				| ((((fg * PHOSPHOR_FG_R) >> 16) << 16) +
-				   (((bg * PHOSPHOR_BG_R) >> 16) << 16))
+				| (((fg * PHOSPHOR_FG_R) & 0x00FF0000) +
+				  (((bg * PHOSPHOR_BG_R) & 0x00FF0000)))
 				| ((((fg * PHOSPHOR_FG_G) >> 16) << 8) +
 				   (((bg * PHOSPHOR_BG_G) >> 16) << 8))
 				| ((((fg * PHOSPHOR_FG_B) >> 16)) +

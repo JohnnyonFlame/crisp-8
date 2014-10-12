@@ -81,7 +81,9 @@ void chip8_flipSurface_fade(Chip8 *chip)
 			uint32_t c = (chip->vram[(i*VID_WIDTH) + j]) ? 0xFF : 0x0;
 			uint32_t fg, bg;
 			
+			//coef OR prev_coef. Shifted for further fixed16 math
 			fg = (c | p) << 16;
+			
 			bg = ((PHOSPHOR_C << 8) - fg) / PHOSPHOR_C;
 			fg /= PHOSPHOR_C;
 			
@@ -124,20 +126,21 @@ void chip8_flipSurface_toggle(Chip8 *chip)
 	{
 		for (j=0; j<VID_WIDTH; j++)
 		{
-			uint32_t *pix = (uint32_t *)surface->pixels;
+			uint32_t c, *pix = (uint32_t *)surface->pixels;
 			pix += (surface->w * i * SIZE_SPR_H) + j * SIZE_SPR_W;
 			
-			//Ugly as sin ternary
-			uint32_t c = (chip->vram[(i*VID_WIDTH) + j]) 
-				//Foreground
-				? (PHOSPHOR_FG_R << 16)
-				| (PHOSPHOR_FG_G)
-				| (PHOSPHOR_FG_B >> 8)
-				//Background
-				: (PHOSPHOR_BG_R << 16)
-				| (PHOSPHOR_BG_G)
-				| (PHOSPHOR_BG_B >> 8);
-
+			if (chip->vram[(i*VID_WIDTH) + j])
+			{
+				c = (PHOSPHOR_FG_R << 16)
+					| (PHOSPHOR_FG_G)
+					| (PHOSPHOR_FG_B >> 8);
+			}
+			else
+			{
+				c = (PHOSPHOR_BG_R << 16)
+					| (PHOSPHOR_BG_G)
+					| (PHOSPHOR_BG_B >> 8);
+			}
 			
 			for (m=0; m<SIZE_SPR_H; m++)
 			{

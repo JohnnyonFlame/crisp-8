@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 	srand(time(NULL));
 	SDL_Init(SDL_INIT_VIDEO);
 	surface = SDL_SetVideoMode(320, 240, 32, SDL_SWSURFACE);
-	SDL_WM_SetCaption ("Shit8", NULL);
+	SDL_WM_SetCaption ("SHIT-8", NULL);
 
 	if (argc < 2) 
 	{
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 		if (*filename != '\0')
 			filename++;
 		
-		printf("Shit8, Syntax:\n%s FILE\n", filename);
+		printf("SHIT-8, Syntax:\n%s FILE\n", filename);
 		return -1;
 	}
 	

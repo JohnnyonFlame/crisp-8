@@ -54,8 +54,17 @@ void chip8_reset(Chip8 *chip)
 	chip->sp = 0;
 }
 
-#define PHOSPHOR_DELTA 40
-void chip8_flipSurface(Chip8 *chip)
+#define PHOSPHOR_FG_R (192 << 8)
+#define PHOSPHOR_FG_G (25 << 8)
+#define PHOSPHOR_FG_B (25 << 8)
+#define PHOSPHOR_BG_R (25 << 8)
+#define PHOSPHOR_BG_G (52 << 8)
+#define PHOSPHOR_BG_B (25 << 8)
+#define PHOSPHOR_C (255 << 8)
+
+#define PHOSPHOR_DELTA 32
+
+void chip8_flipSurface_fade(Chip8 *chip)
 {
 	int i, j, m, n;
 	for (i=0; i<VID_HEIGHT; i++)
@@ -68,17 +77,27 @@ void chip8_flipSurface(Chip8 *chip)
 			//Phosphor fade effect
 			uint32_t p = (*pix >> 24);
 			p = (p < PHOSPHOR_DELTA) ? 0 : p - PHOSPHOR_DELTA;
-			p = (p << 24) | (p << 16) | (p << 8) | p;
 			
 			uint32_t c = (chip->vram[(i*VID_WIDTH) + j]) ? 0xFF : 0x0;
-			c = (c << 24) | (c << 16) | (c << 8) | c;
+			uint32_t fg, bg;
+			
+			fg = (c | p) << 16;
+			bg = ((PHOSPHOR_C << 8) - fg) / PHOSPHOR_C;
+			fg /= PHOSPHOR_C;
+			
+			c = ((c|p) << 24)
+				| ((((fg * PHOSPHOR_FG_R) >> 16) << 16) +
+				   (((bg * PHOSPHOR_BG_R) >> 16) << 16))
+				| ((((fg * PHOSPHOR_FG_G) >> 16) << 8) +
+				   (((bg * PHOSPHOR_BG_G) >> 16) << 8))
+				| ((((fg * PHOSPHOR_FG_B) >> 16)) +
+				   (((bg * PHOSPHOR_BG_B) >> 16)));
 			
 			for (m=0; m<SIZE_SPR_H; m++)
 			{
 				for (n=0; n<SIZE_SPR_W; n++)
 				{
-					//Current pixel or phosphor fade
-					*pix++ = c | p;
+					*pix++ = c;
 				}
 				pix += surface->w - SIZE_SPR_W;
 			}
@@ -86,6 +105,50 @@ void chip8_flipSurface(Chip8 *chip)
 	}
 	
 	SDL_Flip(surface);
+}
+
+void chip8_flipSurface_toggle(Chip8 *chip)
+{
+	int i, j, m, n;
+	for (i=0; i<VID_HEIGHT; i++)
+	{
+		for (j=0; j<VID_WIDTH; j++)
+		{
+			uint32_t *pix = (uint32_t *)surface->pixels;
+			pix += (surface->w * i * SIZE_SPR_H) + j * SIZE_SPR_W;
+			
+			//Ugly as sin ternary
+			uint32_t c = (chip->vram[(i*VID_WIDTH) + j]) 
+				//Foreground
+				? (PHOSPHOR_FG_R << 16)
+				| (PHOSPHOR_FG_G)
+				| (PHOSPHOR_FG_B >> 8)
+				//Background
+				: (PHOSPHOR_BG_R << 16)
+				| (PHOSPHOR_BG_G)
+				| (PHOSPHOR_BG_B >> 8);
+
+			
+			for (m=0; m<SIZE_SPR_H; m++)
+			{
+				for (n=0; n<SIZE_SPR_W; n++)
+				{
+					*pix++ = c;
+				}
+				pix += surface->w - SIZE_SPR_W;
+			}
+		}
+	}
+	
+	SDL_Flip(surface);
+}
+
+void chip8_flipSurface(Chip8 *chip)
+{
+	if (PHOSPHOR_DELTA > 129)	//If its more than half, it wont fade
+		chip8_flipSurface_toggle(chip);
+	else
+		chip8_flipSurface_fade(chip);
 }
 
 void chip8_doTimers(Chip8 *chip)

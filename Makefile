@@ -4,8 +4,8 @@ OBJ=$(patsubst %.c, %.o, $(SRC))
 SDL_CFLAGS=$(shell sdl-config --cflags)
 SDL_LDFLAGS=$(shell sdl-config --libs)
 
-CFLAGS+=$(SDL_CFLAGS) -O2 -ggdb -Wall -Wno-missing-braces
-LDFLAGS+=$(SDL_LDFLAGS)
+CFLAGS+=$(SDL_CFLAGS) -O2 -Wall -Wno-missing-braces
+LDFLAGS+=$(SDL_LDFLAGS) -flto
 
 ifneq (, $(findstring MINGW32, $(shell uname -s)))
 	CFLAGS+=-DWINDOWS

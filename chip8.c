@@ -65,56 +65,67 @@ void chip8_reset(Chip8 *chip)
 #define PHOSPHOR_BG_B (12 << 8)
 #define PHOSPHOR_C (255 << 8)
 
-#define PHOSPHOR_DELTA 32
+#define PHOSPHOR_DELTA_ADD 80
+#define PHOSPHOR_DELTA_SUB 32
 
 void chip8_flipSurface_fade(Chip8 *chip)
 {
 	int i, j, m, n;
+	uint32_t final_color, fg_coef, bg_coef, *scr;
+	uint8_t alpha;
+	
 	for (i=0; i<VID_HEIGHT; i++)
 	{
 		for (j=0; j<VID_WIDTH; j++)
 		{
-			uint32_t *pix = (uint32_t *)surface->pixels;
-			pix += (surface->w * i * SIZE_SPR_H) + j * SIZE_SPR_W;
+			//Find the first pixel of the rect
+			scr = (uint32_t *)surface->pixels;
+			scr += surface->w * i * SIZE_SPR_H;
+			scr += j * SIZE_SPR_W;
 			
-			//Phosphor fade effect
-			uint32_t p = (*pix >> 24);
-			p = (p < PHOSPHOR_DELTA) ? 0 : p - PHOSPHOR_DELTA;
+			//Retrieve alpha channel from pixel
+			alpha = (*scr >> 24);
 			
-			uint32_t c = (chip->vram[(i*VID_WIDTH) + j]) ? 0xFF : 0x0;
-			uint32_t fg, bg;
+			//Either add or subtract from it, depending on framebuffer status
+			if (chip->vram[(i*VID_WIDTH) + j])
+				alpha = (alpha + PHOSPHOR_DELTA_ADD < 255) 
+							? alpha + PHOSPHOR_DELTA_ADD 
+							: 255;
+			else
+				alpha = (alpha < PHOSPHOR_DELTA_SUB) 
+							? 0 
+							: alpha - PHOSPHOR_DELTA_SUB;
+
+			//Calculate the coefficients for the next step.
+			fg_coef = ( alpha       << 16) / PHOSPHOR_C;
+			bg_coef = ((alpha^0xFF) << 16) / PHOSPHOR_C;
 			
-			//coef OR prev_coef. Shifted for further fixed16 math
-			fg = (c | p) << 16;
-			
-			bg = ((PHOSPHOR_C << 8) - fg) / PHOSPHOR_C;
-			fg /= PHOSPHOR_C;
-			
-			/*				
+			/*
 				RGB Channels are calculated as
-					colour = (fg * coef) + (bg * inverse_coef)
+						color = (fg * coef) + (bg * inverse_coef)
 				and then they are shifted and or'd, ignore the crazy bitshift
 				insanity. it's used to do 'proper' divisions without making use
 				of floating point math.
-				
+
 				We store the fade coeffient [0-0xFF] on the alpha channel for
 				future fade passes.
 			*/
-			c = ((c|p) << 24)
-				| (((fg * PHOSPHOR_FG_R) & 0x00FF0000) +
-				  (((bg * PHOSPHOR_BG_R) & 0x00FF0000)))
-				| ((((fg * PHOSPHOR_FG_G) >> 16) << 8) +
-				   (((bg * PHOSPHOR_BG_G) >> 16) << 8))
-				| ((((fg * PHOSPHOR_FG_B) >> 16)) +
-				   (((bg * PHOSPHOR_BG_B) >> 16)));
+
+			final_color = (alpha << 24)
+				|  (((fg_coef * PHOSPHOR_FG_R)  & 0x00FF0000)
+				+  (((bg_coef * PHOSPHOR_BG_R)  & 0x00FF0000)))
+				| ((((fg_coef * PHOSPHOR_FG_G) >> 16) << 8)
+				+  (((bg_coef * PHOSPHOR_BG_G) >> 16) << 8))
+				| ((((fg_coef * PHOSPHOR_FG_B) >> 16))
+				+  (((bg_coef * PHOSPHOR_BG_B) >> 16)));
 			
 			for (m=0; m<SIZE_SPR_H; m++)
 			{
 				for (n=0; n<SIZE_SPR_W; n++)
 				{
-					*pix++ = c;
+					*scr++ = final_color;
 				}
-				pix += surface->w - SIZE_SPR_W;
+				scr += surface->w - SIZE_SPR_W;
 			}
 		}
 	}
@@ -122,25 +133,31 @@ void chip8_flipSurface_fade(Chip8 *chip)
 	SDL_Flip(surface);
 }
 
+
 void chip8_flipSurface_toggle(Chip8 *chip)
 {
 	int i, j, m, n;
+	uint32_t final_color, *scr;
+	
 	for (i=0; i<VID_HEIGHT; i++)
 	{
 		for (j=0; j<VID_WIDTH; j++)
 		{
-			uint32_t c, *pix = (uint32_t *)surface->pixels;
-			pix += (surface->w * i * SIZE_SPR_H) + j * SIZE_SPR_W;
+			scr = (uint32_t *)surface->pixels;
+			scr += surface->w * i * SIZE_SPR_H;
+			scr += j * SIZE_SPR_W;
 			
 			if (chip->vram[(i*VID_WIDTH) + j])
 			{
-				c = (PHOSPHOR_FG_R << 16)
+				final_color = 
+				      (PHOSPHOR_FG_R << 16)
 					| (PHOSPHOR_FG_G)
 					| (PHOSPHOR_FG_B >> 8);
 			}
 			else
 			{
-				c = (PHOSPHOR_BG_R << 16)
+				final_color = 
+					  (PHOSPHOR_BG_R << 16)
 					| (PHOSPHOR_BG_G)
 					| (PHOSPHOR_BG_B >> 8);
 			}
@@ -149,9 +166,9 @@ void chip8_flipSurface_toggle(Chip8 *chip)
 			{
 				for (n=0; n<SIZE_SPR_W; n++)
 				{
-					*pix++ = c;
+					*scr++ = final_color;
 				}
-				pix += surface->w - SIZE_SPR_W;
+				scr += surface->w - SIZE_SPR_W;
 			}
 		}
 	}
@@ -161,7 +178,7 @@ void chip8_flipSurface_toggle(Chip8 *chip)
 
 void chip8_flipSurface(Chip8 *chip)
 {
-	if (PHOSPHOR_DELTA > 129)	//If its more than half, it wont fade
+	if (PHOSPHOR_DELTA_SUB > 129)	//If its more than half, it wont fade
 		chip8_flipSurface_toggle(chip);
 	else
 		chip8_flipSurface_fade(chip);

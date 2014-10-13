@@ -31,6 +31,7 @@ int main(int argc, char* argv[])
 	
 	Chip8* chip = (Chip8*)calloc(1, sizeof(Chip8));
 	chip8_loadRom(chip, argv[1]);
+	chip8_generatePallete(RGB_TO_U32(32, 172, 32), RGB_TO_U32(12, 32, 12));
 	
 	while((chip->ip > 0) && (chip->ip < 0xFFF))
 	{	

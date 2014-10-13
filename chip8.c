@@ -10,12 +10,20 @@
 #include "chip8.h"
 #include "font.h"
 
+#define SIZE_SPR_W 5
+#define SIZE_SPR_H 5
+
+#define PHOSPHOR_DELTA_ADD 80
+#define PHOSPHOR_DELTA_SUB 32
+
 SDL_Surface *surface;
 SDLKey key_binds[16] = 
 {
 	SDLK_x, SDLK_1, SDLK_2, SDLK_3, SDLK_q, SDLK_w, SDLK_e, SDLK_a, 
 	SDLK_s, SDLK_d, SDLK_z, SDLK_c, SDLK_4, SDLK_r, SDLK_f, SDLK_v
 };
+
+static uint32_t chip8_vidPallete[256];
 
 uint8_t chip8_getKey(SDLKey key)
 {
@@ -54,24 +62,51 @@ void chip8_reset(Chip8 *chip)
 	chip->sp = 0;
 }
 
-#define SIZE_SPR_W 5
-#define SIZE_SPR_H 5
+void chip8_generatePallete(uint32_t fg, uint32_t bg)
+{
+	uint32_t fg_r, fg_g, fg_b, fg_coef;
+	uint32_t bg_r, bg_g, bg_b, bg_coef;
 
-#define PHOSPHOR_FG_R (25 << 8)
-#define PHOSPHOR_FG_G (192 << 8)
-#define PHOSPHOR_FG_B (25 << 8)
-#define PHOSPHOR_BG_R (12 << 8)
-#define PHOSPHOR_BG_G (52 << 8)
-#define PHOSPHOR_BG_B (12 << 8)
-#define PHOSPHOR_C (255 << 8)
+	fg_r = ((fg & 0x00FF0000) >> 16) << 8;
+	fg_g = ((fg & 0x0000FF00) >> 8)  << 8; 
+	fg_b = ((fg & 0x000000FF))       << 8;
+	
+	bg_r = ((bg & 0x00FF0000) >> 16) << 8;
+	bg_g = ((bg & 0x0000FF00) >> 8)  << 8; 
+	bg_b = ((bg & 0x000000FF))       << 8;
+	
+	uint32_t i;
+	for (i=0; i<256; i++)
+	{
+			//Calculate the color cross-fading coefficients
+			fg_coef = ( i       << 16) / 0x0000FF00;
+			bg_coef = ((i^0xFF) << 16) / 0x0000FF00;
+			
+			/*
+				RGB Channels are calculated as
+						color = (fg * coef) + (bg * inverse_coef)
+				and then they are shifted and or'd, ignore the crazy bitshift
+				insanity. it's used to do 'proper' divisions without making use
+				of floating point math.
 
-#define PHOSPHOR_DELTA_ADD 80
-#define PHOSPHOR_DELTA_SUB 32
+				We store the fade coeffient [0-0xFF] on the alpha channel for
+				future fade passes.
+			*/
+
+			chip8_vidPallete[i] = 
+				   (((fg_coef * fg_r)  & 0x00FF0000)
+				+  (((bg_coef * bg_r)  & 0x00FF0000)))
+				| ((((fg_coef * fg_g) >> 16) << 8)
+				+  (((bg_coef * bg_g) >> 16) << 8))
+				| ((((fg_coef * fg_b) >> 16))
+				+  (((bg_coef * bg_b) >> 16)));
+	}
+}
 
 void chip8_flipSurface_fade(Chip8 *chip)
 {
 	int i, j, m, n;
-	uint32_t final_color, fg_coef, bg_coef, *scr;
+	uint32_t final_color, *scr;
 	uint32_t scr_t, alpha;
 	
 	for (i=0; i<VID_HEIGHT; i++)
@@ -86,45 +121,18 @@ void chip8_flipSurface_fade(Chip8 *chip)
 			//Retrieve alpha channel from pixel
 			alpha = (*scr >> 24);
 			
-			//Either add or subtract from it, depending on framebuffer status
-			/*if (chip->vram[(i*VID_WIDTH) + j])
-				alpha = (alpha + PHOSPHOR_DELTA_ADD < 255) 
-							? alpha + PHOSPHOR_DELTA_ADD 
-							: 255;
-			else
-				alpha = (alpha < PHOSPHOR_DELTA_SUB) 
-							? 0 
-							: alpha - PHOSPHOR_DELTA_SUB;*/
-							
+			//Query internal framebuffer			
 			scr_t = chip->vram[(i*VID_WIDTH) + j];
-			
+
+			//Either add or subtract from it, depending on framebuffer status			
 			alpha +=  (scr_t) * PHOSPHOR_DELTA_ADD;
 			alpha -= (!scr_t) * PHOSPHOR_DELTA_SUB;
 				
+			//Limit to 0x00 -> 0xFF range
 			alpha = ((scr_t && (alpha > 255)) * 255) | ((alpha <= 255) * alpha);
-
-			//Calculate the coefficients for the next step.
-			fg_coef = ( alpha       << 16) / PHOSPHOR_C;
-			bg_coef = ((alpha^0xFF) << 16) / PHOSPHOR_C;
 			
-			/*
-				RGB Channels are calculated as
-						color = (fg * coef) + (bg * inverse_coef)
-				and then they are shifted and or'd, ignore the crazy bitshift
-				insanity. it's used to do 'proper' divisions without making use
-				of floating point math.
-
-				We store the fade coeffient [0-0xFF] on the alpha channel for
-				future fade passes.
-			*/
-
-			final_color = (alpha << 24)
-				|  (((fg_coef * PHOSPHOR_FG_R)  & 0x00FF0000)
-				+  (((bg_coef * PHOSPHOR_BG_R)  & 0x00FF0000)))
-				| ((((fg_coef * PHOSPHOR_FG_G) >> 16) << 8)
-				+  (((bg_coef * PHOSPHOR_BG_G) >> 16) << 8))
-				| ((((fg_coef * PHOSPHOR_FG_B) >> 16))
-				+  (((bg_coef * PHOSPHOR_BG_B) >> 16)));
+			//Store our coefficient into the alpha channel
+			final_color = (alpha << 24)	| chip8_vidPallete[alpha];
 			
 			for (m=0; m<SIZE_SPR_H; m++)
 			{
@@ -154,20 +162,7 @@ void chip8_flipSurface_toggle(Chip8 *chip)
 			scr += surface->w * i * SIZE_SPR_H;
 			scr += j * SIZE_SPR_W;
 			
-			if (chip->vram[(i*VID_WIDTH) + j])
-			{
-				final_color = 
-				      (PHOSPHOR_FG_R << 16)
-					| (PHOSPHOR_FG_G)
-					| (PHOSPHOR_FG_B >> 8);
-			}
-			else
-			{
-				final_color = 
-					  (PHOSPHOR_BG_R << 16)
-					| (PHOSPHOR_BG_G)
-					| (PHOSPHOR_BG_B >> 8);
-			}
+			final_color = chip8_vidPallete[chip->vram[(i*VID_WIDTH) + j] * 255];
 			
 			for (m=0; m<SIZE_SPR_H; m++)
 			{

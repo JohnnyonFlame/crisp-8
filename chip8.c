@@ -72,7 +72,7 @@ void chip8_flipSurface_fade(Chip8 *chip)
 {
 	int i, j, m, n;
 	uint32_t final_color, fg_coef, bg_coef, *scr;
-	uint8_t alpha;
+	uint32_t scr_t, alpha;
 	
 	for (i=0; i<VID_HEIGHT; i++)
 	{
@@ -87,14 +87,21 @@ void chip8_flipSurface_fade(Chip8 *chip)
 			alpha = (*scr >> 24);
 			
 			//Either add or subtract from it, depending on framebuffer status
-			if (chip->vram[(i*VID_WIDTH) + j])
+			/*if (chip->vram[(i*VID_WIDTH) + j])
 				alpha = (alpha + PHOSPHOR_DELTA_ADD < 255) 
 							? alpha + PHOSPHOR_DELTA_ADD 
 							: 255;
 			else
 				alpha = (alpha < PHOSPHOR_DELTA_SUB) 
 							? 0 
-							: alpha - PHOSPHOR_DELTA_SUB;
+							: alpha - PHOSPHOR_DELTA_SUB;*/
+							
+			scr_t = chip->vram[(i*VID_WIDTH) + j];
+			
+			alpha +=  (scr_t) * PHOSPHOR_DELTA_ADD;
+			alpha -= (!scr_t) * PHOSPHOR_DELTA_SUB;
+				
+			alpha = ((scr_t && (alpha > 255)) * 255) | ((alpha <= 255) * alpha);
 
 			//Calculate the coefficients for the next step.
 			fg_coef = ( alpha       << 16) / PHOSPHOR_C;

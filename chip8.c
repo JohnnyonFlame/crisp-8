@@ -107,7 +107,7 @@ void chip8_flipSurface_fade(Chip8 *chip)
 {
 	int i, j, m, n;
 	uint32_t final_color, *scr;
-	uint32_t scr_t, alpha;
+	uint32_t alpha;
 	
 	for (i=0; i<VID_HEIGHT; i++)
 	{
@@ -118,18 +118,16 @@ void chip8_flipSurface_fade(Chip8 *chip)
 			scr += surface->w * i * SIZE_SPR_H;
 			scr += j * SIZE_SPR_W;
 			
-			//Retrieve alpha channel from pixel
 			alpha = (*scr >> 24);
-			
-			//Query internal framebuffer			
-			scr_t = chip->vram[(i*VID_WIDTH) + j];
 
-			//Either add or subtract from it, depending on framebuffer status			
-			alpha +=  (scr_t) * PHOSPHOR_DELTA_ADD;
-			alpha -= (!scr_t) * PHOSPHOR_DELTA_SUB;
-				
-			//Limit to 0x00 -> 0xFF range
-			alpha = ((scr_t && (alpha > 255)) * 255) | ((alpha <= 255) * alpha);
+			if (chip->vram[(i*VID_WIDTH) + j])
+				alpha = (alpha + PHOSPHOR_DELTA_ADD < 255)
+							? alpha + PHOSPHOR_DELTA_ADD
+                            : 255;
+			else
+				alpha = (alpha < PHOSPHOR_DELTA_SUB)
+							? 0
+							: alpha - PHOSPHOR_DELTA_SUB;
 			
 			//Store our coefficient into the alpha channel
 			final_color = (alpha << 24)	| chip8_vidPallete[alpha];

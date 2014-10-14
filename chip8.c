@@ -101,19 +101,22 @@ void chip8_generatePallete(uint32_t fg, uint32_t bg)
 
 void chip8_flipSurface_fade(Chip8 *chip)
 {
-	int i, j, m, n;
+	int i, j, m, n, pitch1, pitch2, pitch3, _pitch;
 	uint32_t final_color, *scr;
 	uint32_t alpha;
+	
+	scr = (uint32_t *)surface->pixels;
+	
+	_pitch = surface->pitch/surface->format->BytesPerPixel;
+	pitch1 = _pitch - SIZE_SPR_W;
+	pitch2 = (_pitch * SIZE_SPR_H) - SIZE_SPR_W;
+	pitch3 = (_pitch * SIZE_SPR_H) - (SIZE_SPR_W * VID_WIDTH);
 	
 	for (i=0; i<VID_HEIGHT; i++)
 	{
 		for (j=0; j<VID_WIDTH; j++)
 		{
-			//Find the first pixel of the rect
-			scr = (uint32_t *)surface->pixels;
-			scr += surface->w * i * SIZE_SPR_H;
-			scr += j * SIZE_SPR_W;
-			
+			//Find the first pixel of the rect			
 			alpha = (*scr >> 24);
 
 			if (chip->vram[(i*VID_WIDTH) + j])
@@ -134,9 +137,11 @@ void chip8_flipSurface_fade(Chip8 *chip)
 				{
 					*scr++ = final_color;
 				}
-				scr += surface->w - SIZE_SPR_W;
+				scr += pitch1;
 			}
+			scr -= pitch2;
 		}
+		scr += pitch3;
 	}
 	
 	SDL_Flip(surface);
@@ -145,17 +150,20 @@ void chip8_flipSurface_fade(Chip8 *chip)
 
 void chip8_flipSurface_toggle(Chip8 *chip)
 {
-	int i, j, m, n;
+	int i, j, m, n, pitch1, pitch2, pitch3, _pitch;
 	uint32_t final_color, *scr;
+	
+	scr = (uint32_t *)surface->pixels;
+	
+	_pitch = surface->pitch/surface->format->BytesPerPixel;
+	pitch1 = _pitch - SIZE_SPR_W;
+	pitch2 = (_pitch * SIZE_SPR_H) - SIZE_SPR_W;
+	pitch3 = (_pitch * SIZE_SPR_H) - (SIZE_SPR_W * VID_WIDTH);
 	
 	for (i=0; i<VID_HEIGHT; i++)
 	{
 		for (j=0; j<VID_WIDTH; j++)
-		{
-			scr = (uint32_t *)surface->pixels;
-			scr += surface->w * i * SIZE_SPR_H;
-			scr += j * SIZE_SPR_W;
-			
+		{	
 			final_color = chip8_vidPallete[chip->vram[(i*VID_WIDTH) + j] * 255];
 			
 			for (m=0; m<SIZE_SPR_H; m++)
@@ -164,9 +172,11 @@ void chip8_flipSurface_toggle(Chip8 *chip)
 				{
 					*scr++ = final_color;
 				}
-				scr += surface->w - SIZE_SPR_W;
+				scr += pitch1;
 			}
+			scr -= pitch2;
 		}
+		scr += pitch3;
 	}
 	
 	SDL_Flip(surface);

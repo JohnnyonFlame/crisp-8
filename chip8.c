@@ -1,12 +1,8 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
-#include <string.h>
-#include <time.h>
 #include <SDL.h>
 
 #include "shared.h"
-#include "instruction.h"
 #include "chip8.h"
 #include "font.h"
 

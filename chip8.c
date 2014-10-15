@@ -10,7 +10,7 @@
 #define SIZE_SPR_W 5
 #define SIZE_SPR_H 5
 
-#define PHOSPHOR_DELTA_ADD 80
+#define PHOSPHOR_DELTA_ADD 160
 #define PHOSPHOR_DELTA_SUB 32
 
 SDL_Surface *surface;
@@ -199,7 +199,7 @@ void chip8_doTimers(Chip8 *chip)
 	
 	if ((time_d) / 16)
 	{
-		time_d = 0;
+		time_d -= 16;
 		
 		if (chip->timer)
 			chip->timer--;

@@ -1,11 +1,11 @@
-SRC=main.c font.c chip8.c
+SRC=main.c font.c chip8.c beeper_mixer.c
 OBJ=$(patsubst %.c, %.o, $(SRC))
 
 SDL_CFLAGS=$(shell sdl-config --cflags)
 SDL_LDFLAGS=$(shell sdl-config --libs)
 
 CFLAGS+=$(SDL_CFLAGS) -O2 -Wall -Wno-missing-braces
-LDFLAGS+=$(SDL_LDFLAGS)
+LDFLAGS+=$(SDL_LDFLAGS) -lSDL_mixer
 
 ifneq (, $(findstring MINGW32, $(shell uname -s)))
 	CFLAGS+=-DWINDOWS

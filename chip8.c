@@ -5,6 +5,7 @@
 #include "shared.h"
 #include "chip8.h"
 #include "font.h"
+#include "beeper.h"
 
 #define SIZE_SPR_W 5
 #define SIZE_SPR_H 5
@@ -195,19 +196,28 @@ void chip8_doTimers(Chip8 *chip)
 	static uint32_t time_d = 0, time_p = 0;
 	time_d += SDL_GetTicks() - time_p;
 	time_p  = SDL_GetTicks();
-
+	
 	if ((time_d) / 16)
 	{
-		time_d -= 16;
+		time_d = 0;
 		
 		if (chip->timer)
 			chip->timer--;
 			
 		if (chip->beeper)
-			chip->beeper--;
+		{
+			if (beeper_status == BEEPER_LOOPING)
+				chip->beeper--;
+			else if (beeper_status == BEEPER_PAUSED)
+				beeper_startLoop();
+		}
+		else if (beeper_status == BEEPER_LOOPING)
+			beeper_endLoop();
 			
 		chip8_flipSurface(chip);
-	}	
+	}
+	
+	SDL_Delay(1);
 }
 
 uint8_t chip8_doEvents(Chip8 *chip, int wait)

@@ -5,6 +5,7 @@
 
 #include "shared.h"
 #include "chip8.h"
+#include "beeper.h"
 
 int main(int argc, char* argv[])
 {
@@ -12,6 +13,8 @@ int main(int argc, char* argv[])
 	SDL_Init(SDL_INIT_VIDEO);
 	surface = SDL_SetVideoMode(320, 240, 32, SDL_SWSURFACE);
 	SDL_WM_SetCaption ("SHIT-8", NULL);
+	
+	beeper_init();
 
 	if (argc < 2) 
 	{
@@ -32,7 +35,6 @@ int main(int argc, char* argv[])
 	
 	while((chip->ip > 0) && (chip->ip < 0xFFF))
 	{	
-		chip8_doTimers(chip);
 		chip8_doEvents(chip, 0);
 		
 		//fetch instruction
@@ -215,6 +217,7 @@ int main(int argc, char* argv[])
 						chip->timer = chip->reg[r0];
 						break;
 					case 0x18: //LD ST, Va
+						//Beep for Va frames
 						chip->beeper = chip->reg[r0];
 						break;
 					case 0x1E: //ADD I, Va
@@ -246,8 +249,14 @@ int main(int argc, char* argv[])
 		//walk instruction pointer
 		chip->ip += 2;
 		
-		//SDL_Delay(1);
+		//Finish frame, deal with timers.
+		chip8_doTimers(chip);
 	}
+	
+	beeper_deinit();
+	SDL_Quit();
+	
+	free(chip);
 	
 	return 0;
 }

@@ -11,7 +11,7 @@
 #define SIZE_SPR_H 5
 
 #define PHOSPHOR_DELTA_ADD 160
-#define PHOSPHOR_DELTA_SUB 32
+#define PHOSPHOR_DELTA_SUB 24
 
 SDL_Surface *surface;
 SDLKey key_binds[16] = 

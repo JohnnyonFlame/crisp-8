@@ -11,7 +11,6 @@
 uint32_t vid_width  = 64;
 uint32_t vid_height = 32;
 
-SDL_Surface *surface;
 SDLKey key_binds[16] = 
 {
 	SDLK_x, SDLK_1, SDLK_2, SDLK_3, SDLK_q, SDLK_w, SDLK_e, SDLK_a, 

@@ -49,6 +49,14 @@ int chip8_loadRom(Chip8 *chip, char *file)
 	fread(&chip->ram[0] + 0x200, 1, 0xFFF - 0x200, rom);
 	fclose(rom);
 	
+	if (((chip->ram[0x200] << 8) | chip->ram[0x201]) == 0x1260)
+	{
+		VID_HEIGHT = 64;
+		SIZE_SPR_W = 3;
+		SIZE_SPR_H = 3;
+		chip->ip = 0x2c0;
+	}
+	
 	return 1;
 }
 

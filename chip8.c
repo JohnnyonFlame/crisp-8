@@ -5,7 +5,7 @@
 #include "shared.h"
 #include "chip8.h"
 #include "font.h"
-#include "beeper.h"
+#include "beeper.h
 
 uint32_t vid_width  = 64;
 uint32_t vid_height = 32;
@@ -234,7 +234,7 @@ void chip8_scrollScreen_down(Chip8 *chip, int n)
 	uint8_t *vram = &chip->vram[0];
 	
 	memmove(vram + (vid_width * n), vram, (vid_height-n) * vid_width);
-	memset(vram + (vid_width * (vid_height - n)), 0, (vid_width * n));
+	memset(vram, 0, (vid_width * n));
 }
 
 void chip8_doInstruction(Chip8 *chip, uint16_t ins)

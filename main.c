@@ -4,19 +4,19 @@
 #include <SDL.h>
 
 #include "shared.h"
+#include "config.h"
+#include "video.h"
 #include "chip8.h"
 #include "beeper.h"
 
 int main(int argc, char* argv[])
-{
-	srand(time(NULL));
-	SDL_Init(SDL_INIT_VIDEO);
-	surface = SDL_SetVideoMode(320, 240, 32, SDL_SWSURFACE);
-	SDL_WM_SetCaption ("SHIT-8", NULL);
-	
+{	
+	if (!vid_init())
+		return -1;
+		
 	beeper_init();
 
-	if (argc < 2)
+	if (argc < 2) 
 	{
 		char *filename = strrchr(argv[0], '\\'); 
 		if (!filename)
@@ -31,7 +31,6 @@ int main(int argc, char* argv[])
 	
 	Chip8* chip = (Chip8*)calloc(1, sizeof(Chip8));
 	chip8_loadRom(chip, argv[1]);
-	chip8_generatePallete(RGB_TO_U32(52, 172, 32), RGB_TO_U32(24, 32, 12));
 	
 	while((chip->ip > 0) && (chip->ip < 0xFFF))
 	{	
@@ -50,6 +49,7 @@ int main(int argc, char* argv[])
 		chip8_doTimers(chip);
 	}
 	
+	vid_deinit();
 	beeper_deinit();
 	SDL_Quit();
 	

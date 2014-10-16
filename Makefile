@@ -1,4 +1,4 @@
-SRC=main.c font.c chip8.c beeper_mixer.c
+SRC=main.c font.c chip8.c beeper_mixer.c vid_sdl.c config.c
 OBJ=$(patsubst %.c, %.o, $(SRC))
 
 SDL_CFLAGS=$(shell sdl-config --cflags)

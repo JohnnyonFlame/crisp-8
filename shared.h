@@ -1,10 +1,8 @@
 #ifndef __SHARED_H__
 #define __SHARED_H__
 
-extern int VID_WIDTH;
-extern int VID_HEIGHT;
-extern int VID_STRETCH_W;
-extern int VID_STRETCH_H;
+extern uint32_t vid_width;
+extern uint32_t vid_height;
 
 typedef struct Chip8
 {
@@ -18,7 +16,7 @@ typedef struct Chip8
 	uint8_t  rpl[8];
 	
 	//video surface
-	uint8_t  vram[132 * 64];
+	uint8_t  vram[128 * 64];
 	
 	//keypad states
 	uint8_t  key[16];
@@ -47,6 +45,8 @@ typedef struct Chip8
 #define LO1_4(a)  ((a)        & 0x000F)
 #define LO_12(a)  ((a)		  & 0x0FFF)
 #define LO_8(a)   ((a)		  & 0x00FF)
+
+#define RGB_TO_U32(r, g, b) (((r&0xFF) << 16) | ((g&0xFF) << 8) | (b&0xFF))
 
 uint8_t chip8_doEvents(Chip8 *chip, int wait);
 

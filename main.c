@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	
 	beeper_init();
 
-	if (argc < 2) 
+	if (argc < 2)
 	{
 		char *filename = strrchr(argv[0], '\\'); 
 		if (!filename)

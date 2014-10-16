@@ -7,8 +7,10 @@
 #include "font.h"
 #include "beeper.h"
 
-#define SIZE_SPR_W 5
-#define SIZE_SPR_H 5
+int VID_WIDTH  = 64;
+int VID_HEIGHT = 32;
+int SIZE_SPR_W = 4;
+int SIZE_SPR_H = 4;
 
 #define PHOSPHOR_DELTA_ADD 160
 #define PHOSPHOR_DELTA_SUB 24
@@ -53,8 +55,10 @@ int chip8_loadRom(Chip8 *chip, char *file)
 void chip8_reset(Chip8 *chip)
 {
 	memset(chip,  0, sizeof(Chip8)); 
-	memcpy(&chip->ram[0], font, 16*5);
+	memcpy(&chip->ram[0],    font,    16*5);
+	memcpy(&chip->ram[16*5], bigfont, 16*10);
 
+	chip->hires = 0;
 	chip->ip = 0x200;
 	chip->sp = 0;
 }
@@ -263,6 +267,108 @@ uint8_t chip8_doEvents(Chip8 *chip, int wait)
 	return 0;
 }
 
+__inline__ void chip8_clearScreen(Chip8 *chip)
+{
+	memset(&chip->vram[0], 0, VID_WIDTH * VID_HEIGHT);
+}
+
+void chip8_renderSprite_hi(Chip8 *chip, int r0, int r1, int op)
+{	
+	//Reset register Vf
+	chip->reg[15] = 0;
+	
+	int i, j, x, y;
+	uint8_t a, b, *p;
+	for (i=0; i<op; i++)
+	{
+		uint16_t row = (chip->ram[chip->regi + (i*2)] << 8)
+					 | (chip->ram[chip->regi + (i*2) + 1]);
+					 
+		for (j=0; j<16; j++)
+		{
+			x = (j + chip->reg[r0]) % VID_WIDTH;
+			y = (i + chip->reg[r1]) % VID_HEIGHT;
+			
+			a = (row & (0x8000 >> j)) >> (15-j);
+			p = &chip->vram[(y*VID_WIDTH) + x];
+			b = *p;
+			
+			if (a & b)
+				chip->reg[15] = 1;
+				
+			*p = a^b;
+		}
+	}
+}
+
+void chip8_renderSprite_lo(Chip8 *chip, int r0, int r1, int op)
+{
+	if (!op)
+		op = 16;
+		
+	//Reset register Vf
+	chip->reg[15] = 0;
+	
+	int i, j, x, y;
+	uint8_t a, b, *p;
+	for (i=0; i<op; i++)
+	{
+		uint8_t row = chip->ram[chip->regi + i];
+		for (j=0; j<8; j++)
+		{
+			x = (j + chip->reg[r0]) % VID_WIDTH;
+			y = (i + chip->reg[r1]) % VID_HEIGHT;
+			
+			a = (row & (0x80 >> j)) >> (7-j);
+			p = &chip->vram[(y*VID_WIDTH) + x];
+			b = *p;
+			
+			if (a & b)
+				chip->reg[15] = 1;
+				
+			*p = a^b;
+		}
+	}
+}
+
+void chip8_scrollScreen_right(Chip8 *chip)
+{
+	int i, n;
+	uint8_t *vram = &chip->vram[0];
+	
+	n = (chip->hires) ? 4 : 2;
+	
+	for (i=0; i<VID_HEIGHT; i++)
+	{
+		memmove(vram+n, vram, VID_WIDTH-n);
+		memset(vram, 0, n);
+		vram+=VID_WIDTH;
+	}
+}
+
+void chip8_scrollScreen_left(Chip8 *chip)
+{
+	int i, n;
+	uint8_t *vram = &chip->vram[0];
+	
+	n = (chip->hires) ? 4 : 2;
+	
+	for (i=0; i<VID_HEIGHT; i++)
+	{
+		memmove(vram, vram+n, VID_WIDTH-n);
+		vram+=VID_WIDTH;
+		memset(vram-n, 0, n);
+	}
+}
+
+void chip8_scrollScreen_down(Chip8 *chip, int n)
+{
+	uint8_t *vram = &chip->vram[0];
+	
+	memmove(vram + (VID_WIDTH * n), vram, (VID_HEIGHT-n) * VID_WIDTH);
+	memset(vram + (VID_WIDTH * (VID_HEIGHT - n)), 0, (VID_WIDTH * n));
+}
+
 void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 {
 	uint16_t addr = LO_12(ins);
@@ -278,14 +384,44 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 	case 0x0:		
 		switch(addr)
 		{
-		case 0x00E0: 	//Clears the display
-			memset(&chip->vram[0], 0, VID_WIDTH * VID_HEIGHT);
+		case 0x0E0: 	//Clears the display
+			chip8_clearScreen(chip);
 			break;
-		case 0x00EE: 	//Returns from subroutines
+		case 0x0EE: 	//Returns from subroutines
 			chip->ip = chip->stack[--chip->sp];
 			break;
-		default: 		//Unhandled situation.
+		case 0x0FB:
+			chip8_scrollScreen_right(chip);
+			break;
+		case 0x0FC:
+			chip8_scrollScreen_left(chip);
+			break;
+		case 0x0FD:
+			chip->ip = 0x1000; //step outside bounds- kills the interpreter
+			break;
+		case 0x0FE:
+			chip8_clearScreen(chip);
+			VID_WIDTH  = 64;
+			VID_HEIGHT = 32;
+			SIZE_SPR_W = 4;
+			SIZE_SPR_H = 4;
+			
+			chip->hires = 0;
+			break;
+		case 0x0FF:
+			chip8_clearScreen(chip);
+			VID_WIDTH  = 128;
+			VID_HEIGHT = 64;
+			SIZE_SPR_W = 2;
+			SIZE_SPR_H = 2;
+			
+			chip->hires = 1;
+			break;
+		default:
 			//TODO:: Print warning/error
+			if (addr & 0x0C0)
+				chip8_scrollScreen_down(chip, op);
+				
 			break;
 		}
 		break;
@@ -382,32 +518,12 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		break;
 	//DRW Va, Vb, N
 	case 0xD:
-	{
-		//Reset register Vf
-		chip->reg[15] = 0;
-		
-		int i, j, x, y;
-		uint8_t a, b, *p;
-		for (i=0; i<op; i++)
-		{
-			uint8_t row = chip->ram[chip->regi + i];
-			for (j=0; j<8; j++)
-			{
-				x = (j + chip->reg[r0]) % VID_WIDTH;
-				y = (i + chip->reg[r1]) % VID_HEIGHT;
-				
-				a = (row & (0x80 >> j)) >> (7-j);
-				p = &chip->vram[(y*VID_WIDTH) + x];
-				b = *p;
-				
-				if (a & b)
-					chip->reg[15] = 1;
-					
-				*p = a^b;
-			}
-		}
+		if (chip->hires && op == 0)
+			chip8_renderSprite_hi(chip, r0, r1, 16);
+		else
+			chip8_renderSprite_lo(chip, r0, r1, op);
+			
 		break;
-	}
 	//<...>
 	case 0xE:
 		switch(val)
@@ -449,6 +565,9 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 					break;
 				case 0x29: //LD F, Va
 					chip->regi = chip->reg[r0] * 5;
+					break;
+				case 0x30:
+					chip->regi = (chip->reg[r0] * 10) + (16*5);
 					break;
 				case 0x33: //LD B, Va
 					chip->ram[chip->regi+2] =  chip->reg[r0] % 10;

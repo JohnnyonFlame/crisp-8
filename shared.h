@@ -1,8 +1,10 @@
 #ifndef __SHARED_H__
 #define __SHARED_H__
 
-#define VID_WIDTH  64
-#define VID_HEIGHT 32
+extern int VID_WIDTH;
+extern int VID_HEIGHT;
+extern int SIZE_SPR_W;
+extern int SIZE_SPR_H;
 
 typedef struct Chip8
 {
@@ -13,7 +15,7 @@ typedef struct Chip8
 	uint8_t  reg[16];
 	
 	//video surface
-	uint8_t  vram[VID_WIDTH * VID_HEIGHT];
+	uint8_t  vram[132 * 64];
 	
 	//keypad states
 	uint8_t  key[16];
@@ -31,6 +33,9 @@ typedef struct Chip8
 	//sound & delay timers
 	uint8_t beeper;
 	uint8_t timer;
+	
+	//hi-res mode
+	uint8_t hires;
 } Chip8;
 
 #define HI0_4(a) (((a) >> 12) & 0x000F)

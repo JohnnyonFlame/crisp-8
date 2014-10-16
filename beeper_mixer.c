@@ -7,7 +7,6 @@
 #include "beeper.h"
 
 #define BEEPER_LOOPCHANNEL 	1
-#define BEEPER_FADETIME		4
 
 Mix_Chunk *beeper_loop = NULL;
 int beeper_status = BEEPER_PAUSED;

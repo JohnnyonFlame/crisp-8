@@ -3,8 +3,8 @@
 
 extern int VID_WIDTH;
 extern int VID_HEIGHT;
-extern int SIZE_SPR_W;
-extern int SIZE_SPR_H;
+extern int VID_STRETCH_W;
+extern int VID_STRETCH_H;
 
 typedef struct Chip8
 {

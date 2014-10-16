@@ -9,8 +9,8 @@
 
 int VID_WIDTH  = 64;
 int VID_HEIGHT = 32;
-int SIZE_SPR_W = 4;
-int SIZE_SPR_H = 4;
+int VID_STRETCH_W = 4;
+int VID_STRETCH_H = 4;
 
 #define PHOSPHOR_DELTA_ADD 160
 #define PHOSPHOR_DELTA_SUB 24
@@ -52,8 +52,8 @@ int chip8_loadRom(Chip8 *chip, char *file)
 	if (((chip->ram[0x200] << 8) | chip->ram[0x201]) == 0x1260)
 	{
 		VID_HEIGHT = 64;
-		SIZE_SPR_W = 3;
-		SIZE_SPR_H = 3;
+		VID_STRETCH_W = 3;
+		VID_STRETCH_H = 3;
 		chip->ip = 0x2c0;
 	}
 	
@@ -121,9 +121,9 @@ void chip8_flipSurface_fade(Chip8 *chip)
 	scr = (uint32_t *)surface->pixels;
 	
 	_pitch = surface->pitch/surface->format->BytesPerPixel;
-	pitch1 = _pitch - SIZE_SPR_W;
-	pitch2 = (_pitch * SIZE_SPR_H) - SIZE_SPR_W;
-	pitch3 = (_pitch * SIZE_SPR_H) - (SIZE_SPR_W * VID_WIDTH);
+	pitch1 = _pitch - VID_STRETCH_W;
+	pitch2 = (_pitch * VID_STRETCH_H) - VID_STRETCH_W;
+	pitch3 = (_pitch * VID_STRETCH_H) - (VID_STRETCH_W * VID_WIDTH);
 	
 	for (i=0; i<VID_HEIGHT; i++)
 	{
@@ -144,9 +144,9 @@ void chip8_flipSurface_fade(Chip8 *chip)
 			//Store our coefficient into the alpha channel
 			final_color = (alpha << 24)	| chip8_vidPallete[alpha];
 			
-			for (m=0; m<SIZE_SPR_H; m++)
+			for (m=0; m<VID_STRETCH_H; m++)
 			{
-				for (n=0; n<SIZE_SPR_W; n++)
+				for (n=0; n<VID_STRETCH_W; n++)
 				{
 					*scr++ = final_color;
 				}
@@ -169,9 +169,9 @@ void chip8_flipSurface_toggle(Chip8 *chip)
 	scr = (uint32_t *)surface->pixels;
 	
 	_pitch = surface->pitch/surface->format->BytesPerPixel;
-	pitch1 = _pitch - SIZE_SPR_W;
-	pitch2 = (_pitch * SIZE_SPR_H) - SIZE_SPR_W;
-	pitch3 = (_pitch * SIZE_SPR_H) - (SIZE_SPR_W * VID_WIDTH);
+	pitch1 = _pitch - VID_STRETCH_W;
+	pitch2 = (_pitch * VID_STRETCH_H) - VID_STRETCH_W;
+	pitch3 = (_pitch * VID_STRETCH_H) - (VID_STRETCH_W * VID_WIDTH);
 	
 	for (i=0; i<VID_HEIGHT; i++)
 	{
@@ -179,9 +179,9 @@ void chip8_flipSurface_toggle(Chip8 *chip)
 		{	
 			final_color = chip8_vidPallete[chip->vram[(i*VID_WIDTH) + j] * 255];
 			
-			for (m=0; m<SIZE_SPR_H; m++)
+			for (m=0; m<VID_STRETCH_H; m++)
 			{
-				for (n=0; n<SIZE_SPR_W; n++)
+				for (n=0; n<VID_STRETCH_W; n++)
 				{
 					*scr++ = final_color;
 				}
@@ -411,8 +411,8 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			chip8_clearScreen(chip);
 			VID_WIDTH  = 64;
 			VID_HEIGHT = 32;
-			SIZE_SPR_W = 4;
-			SIZE_SPR_H = 4;
+			VID_STRETCH_W = 4;
+			VID_STRETCH_H = 4;
 			
 			chip->hires = 0;
 			break;
@@ -420,8 +420,8 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			chip8_clearScreen(chip);
 			VID_WIDTH  = 128;
 			VID_HEIGHT = 64;
-			SIZE_SPR_W = 2;
-			SIZE_SPR_H = 2;
+			VID_STRETCH_W = 2;
+			VID_STRETCH_H = 2;
 			
 			chip->hires = 1;
 			break;

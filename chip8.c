@@ -479,7 +479,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			chip->reg[r0] += chip->reg[r1];
 			break;
 		case 0x5:	//SUB Va, Vb (w/ borrow)
-			chip->reg[15] = (chip->reg[r0] > chip->reg[r1]);
+			chip->reg[15] = !(chip->reg[r0] < chip->reg[r1]);
 			chip->reg[r0] -= chip->reg[r1];
 			break;
 		case 0x6:	//SHR Va[, Vb]
@@ -487,7 +487,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			chip->reg[r0] >>= 1;
 			break;
 		case 0x7:	//SUBN Va, Vb
-			chip->reg[15] = (chip->reg[r1] > chip->reg[r0]);
+			chip->reg[15] = !(chip->reg[r1] < chip->reg[r0]);
 			chip->reg[r0] =  chip->reg[r1] - chip->reg[r0];
 			break;
 		case 0xE:	//SHL Va[, Vb] 

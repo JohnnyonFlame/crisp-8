@@ -14,6 +14,9 @@ typedef struct Chip8
 	//registers
 	uint8_t  reg[16];
 	
+	//RPL Registers
+	uint8_t  rpl[8];
+	
 	//video surface
 	uint8_t  vram[132 * 64];
 	

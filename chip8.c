@@ -561,6 +561,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 					chip->beeper = chip->reg[r0];
 					break;
 				case 0x1E: //ADD I, Va
+					chip->reg[15] = (chip->regi + chip->reg[r0] > 255);
 					chip->regi += chip->reg[r0];
 					break;
 				case 0x29: //LD F, Va
@@ -581,6 +582,20 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 				case 0x65: //LD Va, I
 					for (i=0; i<=r0; i++)
 						chip->reg[i] = chip->ram[chip->regi+i];
+					break;
+				case 0x75:
+					if (r0 > 7)
+						r0 = 0;
+					
+					for (i=0; i<=r0; i++)
+						chip->rpl[i] = chip->reg[i];
+					break;
+				case 0x85:
+					if (r0 > 7)
+						r0 = 0;
+					
+					for (i=0; i<=r0; i++)
+						chip->reg[i] = chip->rpl[i];
 					break;
 				default: 
 					break;

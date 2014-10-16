@@ -5,7 +5,8 @@
 #include "shared.h"
 #include "chip8.h"
 #include "font.h"
-#include "beeper.h
+#include "beeper.h"
+#include "video.h"
 
 uint32_t vid_width  = 64;
 uint32_t vid_height = 32;

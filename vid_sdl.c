@@ -54,14 +54,111 @@ void vid_generatePalette(uint32_t fg, uint32_t bg)
 	}
 }
 
-void vid_flipSurface_fade(Chip8 *chip)
+static __inline__ void vid_fillRect(uint32_t *scr, uint32_t col, int pitch, int w, int h)
+{
+	int i, j;
+	for (i=0; i<h; i++)
+	{
+		for (j=0; j<w; j++)
+		{
+			*scr++ = col;
+		}
+		scr += pitch;
+	}
+}
+
+#define FIX8_ONE (1<<8)
+static void vid_flipSurface_stretch(Chip8 *chip)
+{
+	int i, j, pitch1, pitch2;
+	int scale_w, scale_h, coef_x, coef_y;
+	int t_x, t_y;
+	uint32_t alpha, *scr;
+	uint32_t acc_x = 0, acc_y = 0;
+
+	scr = (uint32_t *)surface->pixels;
+	pitch1 = surface->pitch / surface->format->BytesPerPixel;
+
+	//Scaling factors
+	scale_w = (surface->w << 8) / vid_width;
+	scale_h = (surface->h << 8) / vid_height;
+
+	if (vid_stretch & VID_STRETCH_ASPECT)
+	{
+		if (scale_w > scale_h)
+			scale_w = scale_h;
+		else
+			scale_h = scale_w;
+	}
+
+	if (vid_stretch & VID_STRETCH_INTEGER)
+	{
+		scale_w &= 0xFFFFFF00;
+		scale_h &= 0xFFFFFF00;
+	}
+
+	//Coefficients (in fix_8)
+	coef_x = (scale_w & 0x000000FF);
+	coef_y = (scale_h & 0x000000FF);
+
+	pitch2 = surface->w - ((scale_w * vid_width) >> 8);
+
+
+	scr += (surface->w - ((scale_w * vid_width) >> 8)) / 2;
+	scr += pitch1 * ((surface->h - ((scale_h * vid_height) >> 8)) / 2);
+
+	scale_w >>= 8;
+	scale_h >>= 8;
+
+	for (i=0; i<vid_height; i++)
+	{
+		acc_y += coef_y;
+		t_y = acc_y / FIX8_ONE;
+
+		for (j=0; j<vid_width; j++)
+		{
+			//Accumulate
+			acc_x += coef_x;
+			t_x = acc_x / FIX8_ONE;
+
+			//Find the first pixel of the rect
+			alpha = vid_fadeBuffer[(i*vid_width) + j];
+
+			if (chip->vram[(i*vid_width) + j])
+				alpha = (alpha + vid_phosphor_add < 255)
+						? alpha + vid_phosphor_add
+						: 255;
+			else
+				alpha = (alpha < vid_phosphor_sub)
+						? 0
+						: alpha - vid_phosphor_sub;
+
+			vid_fadeBuffer[(i*vid_width) + j] = alpha;
+
+			vid_fillRect(scr, vid_palette[alpha], pitch1 - scale_w - t_x, scale_w + t_x, scale_h + t_y);
+
+			scr += scale_w + t_x;
+			acc_x = acc_x % FIX8_ONE;
+		}
+
+		scr += pitch1 * ((scale_h - 1) + t_y);
+		scr += pitch2;
+		acc_y = acc_y % FIX8_ONE;
+	}
+
+	SDL_Flip(surface);
+}
+
+static void vid_flipSurface_original(Chip8 *chip)
 {
 	int i, j, pitch;
 	uint32_t alpha, *scr;
 	
-	pitch = (surface->pitch / surface->format->BytesPerPixel)- vid_width;
-
 	scr = (uint32_t *)surface->pixels;
+	pitch = (surface->pitch / surface->format->BytesPerPixel) - vid_width;
+
+	scr += (surface->w - vid_width) / 2;
+	scr += (pitch + vid_width) * ((surface->h - vid_height) / 2);
 
 	for (i=0; i<vid_height; i++)
 	{
@@ -128,6 +225,9 @@ void vid_updateSize(uint32_t w, uint32_t h)
 
 void vid_flipSurface(Chip8 *chip)
 {
-	vid_flipSurface_fade(chip);
+	if (vid_stretch & VID_STRETCH)
+		vid_flipSurface_stretch(chip);
+	else
+		vid_flipSurface_original(chip);
 	//TODO:: Flip surface code
 }

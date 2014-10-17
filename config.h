@@ -2,10 +2,10 @@
 #define __CONFIG_H__
 
 enum {
-	VID_STRETCH_NONE = 0,
-	VID_STRETCH_ASPECT,
-	VID_STRETCH_FULL,
-} VID_STRETCH;
+	VID_STRETCH = 1 << 0,
+	VID_STRETCH_ASPECT = 1 << 1,
+	VID_STRETCH_INTEGER = 1 << 2,
+}H;
 
 extern uint32_t vid_fgColors;
 extern uint32_t vid_bgColors;

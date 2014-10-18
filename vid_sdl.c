@@ -197,6 +197,8 @@ int vid_init()
 {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_WM_SetCaption("Crisp-8", NULL);
+	SDL_ShowCursor(SDL_DISABLE);
+
 	surface = SDL_SetVideoMode(320, 240, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
 	
 	if (!surface)

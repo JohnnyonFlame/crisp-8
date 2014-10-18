@@ -24,7 +24,7 @@ void beeper_init()
 	//Give precedence to anything present on $HOME if possible.
 	char loop_path[256];
 	strncpy(loop_path, getenv("HOME"), 256);
-	snprintf(loop_path, 256, "%s/.shit8/loop.wav", getenv("HOME"));
+	snprintf(loop_path, 256, "%s/.crisp8/loop.wav", getenv("HOME"));
 	
 	if ((beeper_loop = Mix_LoadWAV(loop_path)) != NULL)
 		return;

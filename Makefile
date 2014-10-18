@@ -1,3 +1,5 @@
+TARGET=crisp8
+
 SRC=main.c font.c chip8.c beeper_mixer.c vid_sdl.c config.c
 OBJ=$(patsubst %.c, %.o, $(SRC))
 
@@ -9,12 +11,10 @@ LDFLAGS+=$(SDL_LDFLAGS) -lSDL_mixer
 
 ifneq (, $(findstring MINGW32, $(shell uname -s)))
 	CFLAGS+=-DWINDOWS
-	TARGET=shit8.exe
 	CC=mingw32-gcc
 endif
 
 ifneq (, $(findstring Linux, $(shell uname -s)))
-	TARGET=shit8
 	CC=gcc
 endif
 

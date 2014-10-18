@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 		if (*filename != '\0')
 			filename++;
 		
-		printf("SHIT-8, Syntax:\n%s FILE\n", filename);
+		printf("Crisp-8, Syntax:\n%s FILE\n", filename);
 		return -1;
 	}
 	

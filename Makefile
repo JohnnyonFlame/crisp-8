@@ -1,17 +1,21 @@
 TARGET=crisp8
 
+DEBUG?=0
 SRC=main.c font.c chip8.c beeper_mixer.c vid_sdl.c config.c
 OBJ=$(patsubst %.c, %.o, $(SRC))
 
 SDL_CFLAGS=$(shell sdl-config --cflags)
 SDL_LDFLAGS=$(shell sdl-config --libs)
 
-CFLAGS+=$(SDL_CFLAGS) -O2 -Wall -Wno-missing-braces
+CFLAGS+=$(SDL_CFLAGS) -O2 -Wall -Wno-missing-braces -Wno-unused-value
 LDFLAGS+=$(SDL_LDFLAGS) -lSDL_mixer
 
-ifneq (, $(findstring MINGW32, $(shell uname -s)))
+ifneq (, $(findstring MINGW32, $(shell uname -s)))	
 	CFLAGS+=-DWINDOWS
 	CC=mingw32-gcc
+	ifeq (1, $(DEBUG))
+		CFLAGS+=-DDEBUG
+	endif
 endif
 
 ifneq (, $(findstring Linux, $(shell uname -s)))

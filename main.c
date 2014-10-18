@@ -3,6 +3,12 @@
 #include <time.h>
 #include <SDL.h>
 
+#ifdef WINDOWS
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include "shared.h"
 #include "config.h"
 #include "video.h"
@@ -11,6 +17,23 @@
 
 int main(int argc, char* argv[])
 {	
+#if defined(WINDOWS) && defined(DEBUG)
+	//Allocate debugging console
+	int conHandle;
+	long stdHandle;
+
+	AllocConsole();
+
+    stdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+    conHandle = _open_osfhandle(stdHandle, _O_TEXT);
+
+    *stdout = *_fdopen( conHandle, "w" );
+    *stdin  = *_fdopen( conHandle, "r" );
+
+    setvbuf( stdout, NULL, _IONBF, 0 );
+    setvbuf( stdin, NULL, _IONBF, 0 );
+#endif
+
 	if (!vid_init())
 		return -1;
 		
@@ -38,7 +61,7 @@ int main(int argc, char* argv[])
 		
 		//fetch instruction
 		uint16_t ins = (chip->ram[chip->ip+1]) | (chip->ram[chip->ip] << 8);
-		
+
 		//Decode & Execute instruction
 		chip8_doInstruction(chip, ins);
 		

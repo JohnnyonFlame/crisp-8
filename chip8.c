@@ -312,7 +312,10 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		default:
 			//TODO:: Print warning/error
 			if (addr & 0x0C0)
+			{
+				printf_debug("SCR %i\n", op);
 				chip8_scrollScreen_down(chip, op);
+			}
 			else
 				printf_debug("Unknown instruction %04X\n", ins);
 			break;
@@ -350,7 +353,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		break;
 	//LD Va, byte
 	case 0x6:
-		printf_debug("LDI V%x, %03i\n", r0, val);
+		printf_debug("LD V%x, %03i\n", r0, val);
 		chip->reg[r0] = val;
 		break;
 	//ADD Va, byte
@@ -379,12 +382,12 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			chip->reg[r0] ^= chip->reg[r1];
 			break;
 		case 0x4:	//ADD Va, Vb (w/ carry)
-			printf_debug("AND V%x, V%x\n", r0, r1);
+			printf_debug("ADD V%x, V%x\n", r0, r1);
 			chip->reg[15] = ((chip->reg[r0] + chip->reg[r1]) > 255);			
 			chip->reg[r0] += chip->reg[r1];
 			break;
 		case 0x5:	//SUB Va, Vb (w/ borrow)
-			printf_debug("SUBF V%x, V%x\n", r0, r1);
+			printf_debug("SUB V%x, V%x\n", r0, r1);
 			chip->reg[15] = !(chip->reg[r0] < chip->reg[r1]);
 			chip->reg[r0] -= chip->reg[r1];
 			break;
@@ -486,15 +489,15 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 					chip->regi += chip->reg[r0];
 					break;
 				case 0x29: //LD F, Va
-					printf_debug("LD V%x\n", r0);
+					printf_debug("LD V%x, LF\n", r0);
 					chip->regi = chip->reg[r0] * 5;
 					break;
 				case 0x30:
-					printf_debug("LFONT V%x\n", r0);
+					printf_debug("LD V%x, HF\n", r0);
 					chip->regi = (chip->reg[r0] * 10) + (16*5);
 					break;
 				case 0x33: //LD B, Va
-					printf_debug("LD B, V%x\n", r0);
+					printf_debug("LD BCD, V%x\n", r0);
 					chip->ram[chip->regi+2] =  chip->reg[r0] % 10;
 					chip->ram[chip->regi+1] = (chip->reg[r0] / 10) % 10;
 					chip->ram[chip->regi  ] =  chip->reg[r0] / 100;

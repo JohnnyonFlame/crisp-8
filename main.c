@@ -79,6 +79,7 @@ int main(int argc, char* argv[])
 		{
 			if (old_ip == chip->br_list[i])
 			{
+				printf("Reached breakpoint %i\n", i);
 				chip8_invokeDebug(chip);
 			}
 		}

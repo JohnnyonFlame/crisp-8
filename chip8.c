@@ -162,7 +162,7 @@ void chip8_invokeDebug(Chip8 *chip)
 		}
 		else if (!strcmp(cmd, "continue"))
 			break;
-		else if (!strcmp(cmd, "quit") || !strcmp(cmd, "quit"))
+		else if (!strcmp(cmd, "quit") || !strcmp(cmd, "exit"))
 		{
 			chip->ip = 0x1000;
 			break;

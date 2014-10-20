@@ -9,7 +9,7 @@
 #include "video.h"
 
 #if defined(DEBUG)
-#define printf_debug(...) printf(__VA_ARGS__)
+#define printf_debug(fmt, ...) printf("%04X: " fmt, chip->ip, ##__VA_ARGS__)
 #else
 #define printf_debug
 #endif

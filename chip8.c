@@ -9,7 +9,7 @@
 #include "video.h"
 
 #if defined(DEBUG)
-#define printf_debug(fmt, ...) printf("%04X: " fmt, chip->ip, ##__VA_ARGS__)
+#define printf_debug(fmt, ...) printf("%04X@%04X: " fmt, ins, chip->ip, ##__VA_ARGS__)
 #else
 #define printf_debug
 #endif
@@ -106,6 +106,76 @@ void chip8_doTimers(Chip8 *chip)
 	SDL_Delay(1);
 }
 
+#ifdef DEBUG
+void chip8_invokeDebug(Chip8 *chip)
+{
+	fflush(stdin);
+	char cmd[40];
+
+	while (fscanf(stdin, "%s", cmd))
+	{
+		if (!strcmp(cmd, "inject"))
+		{
+			uint32_t ins;
+			if (fscanf(stdin, "%04X", &ins))
+				chip8_doInstruction(chip, ins);
+		}
+		else if (!strcmp(cmd, "br"))
+		{
+			uint32_t addr;
+			if (fscanf(stdin, "%03X", &addr))
+			{
+				chip->br_list[chip->br_count++] = addr & 0x0FFF;
+				printf("Added breakpoint %i at %03X\n", chip->br_count-1, addr);
+			}
+
+		}
+		else if (!strcmp(cmd, "del"))
+		{
+			int index;
+			if (fscanf(stdin, "%03i", &index))
+			{
+				if (index >= chip->br_count)
+				{
+					printf("WARNING: Trying to delete breakpoint index out-of-bounds.\n");
+					break;
+				}
+
+				int i;
+				for (i=0; i<chip->br_count-1; i++)
+				{
+					chip->br_list[i] = chip->br_list[i+1];
+				}
+
+				chip->br_count--;
+			}
+		}
+		else if (!strcmp(cmd, "list_reg"))
+		{
+			int i;
+			for (i=0; i<16; i++)
+			{
+				printf("REG V%x := dec %05i hex %04X\n", i, chip->reg[i], chip->reg[i]);
+			}
+
+			printf("REG I  := dec %05i hex %04X\n", chip->regi, chip->regi);
+		}
+		else if (!strcmp(cmd, "continue"))
+			break;
+		else if (!strcmp(cmd, "quit") || !strcmp(cmd, "quit"))
+		{
+			chip->ip = 0x1000;
+			break;
+		}
+		else
+		{
+			printf("Unknown command %s.\n", cmd);
+			continue;
+		}
+	}
+}
+#endif
+
 uint8_t chip8_doEvents(Chip8 *chip, int wait)
 {
 	uint8_t k;
@@ -135,9 +205,7 @@ uint8_t chip8_doEvents(Chip8 *chip, int wait)
 
 			if ((ev.key.keysym.sym == SDLK_i) && (ev.type == SDL_KEYDOWN))
 			{
-				uint32_t ins;
-				if (fscanf(stdin, "%04X", &ins))
-					chip8_doInstruction(chip, ins);
+				chip8_invokeDebug(chip);
 			}
 #endif
 
@@ -396,7 +464,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			break;
 		case 0x4:	//ADD Va, Vb (w/ carry)
 			printf_debug("ADD V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
-			chip->reg[15] = ((chip->reg[r0] + chip->reg[r1]) > 255);			
+			chip->reg[15] = ((chip->reg[r0] + chip->reg[r1]) > 255);
 			chip->reg[r0] += chip->reg[r1];
 			break;
 		case 0x5:	//SUB Va, Vb (w/ borrow)

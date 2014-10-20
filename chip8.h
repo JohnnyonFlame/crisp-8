@@ -11,5 +11,8 @@ void chip8_doTimers(Chip8 *chip);
 void chip8_doInstruction(Chip8 *chip, uint16_t ins);
 uint8_t chip8_doEvents(Chip8 *chip, int wait);
 uint8_t chip8_getKey(SDLKey key);
+#ifdef DEBUG
+void chip8_invokeDebug(Chip8 *chip);
+#endif
 
 #endif //__CHIP8_H__

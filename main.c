@@ -63,12 +63,27 @@ int main(int argc, char* argv[])
 	{	
 		chip8_doEvents(chip, 0);
 		
+#ifdef DEBUG
+		uint16_t old_ip = chip->ip;
+#endif
+
 		//fetch instruction
 		uint16_t ins = (chip->ram[chip->ip+1]) | (chip->ram[chip->ip] << 8);
 
 		//Decode & Execute instruction
 		chip8_doInstruction(chip, ins);
 		
+#ifdef DEBUG
+		int i;
+		for (i=0; i<chip->br_count; i++)
+		{
+			if (old_ip == chip->br_list[i])
+			{
+				chip8_invokeDebug(chip);
+			}
+		}
+#endif
+
 		//walk instruction pointer
 		chip->ip += 2;
 		

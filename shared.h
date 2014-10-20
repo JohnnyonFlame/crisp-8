@@ -37,6 +37,12 @@ typedef struct Chip8
 	
 	//hi-res mode
 	uint8_t hires;
+
+#ifdef DEBUG
+	//Breakpoints
+	uint16_t br_list[255];
+	uint16_t br_count;
+#endif
 } Chip8;
 
 #define HI0_4(a) (((a) >> 12) & 0x000F)

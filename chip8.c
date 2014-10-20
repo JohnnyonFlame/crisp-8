@@ -150,7 +150,7 @@ void chip8_invokeDebug(Chip8 *chip)
 				chip->br_count--;
 			}
 		}
-		else if (!strcmp(cmd, "list_reg"))
+		else if (!strcmp(cmd, "reg"))
 		{
 			int i;
 			for (i=0; i<16; i++)

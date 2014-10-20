@@ -323,13 +323,19 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		break;
 	//JP addr
 	case 0x1:
-		printf_debug("JP %03Xh\n", addr);
+		printf_debug("JP %03Xh ;[from %03X]\n", addr, chip->ip);
 		chip->ip = addr - 2;
 		break;
 	//CALL addr
 	case 0x2:
 		printf_debug("CALL %03Xh\n", addr);
 		chip->stack[chip->sp++] = chip->ip;
+		if (chip->sp > 16)
+		{
+			printf("WARNING! STACK POINTER OUT OF BOUNDS.\n");
+			chip->ip = 0x1000;
+		}
+
 		chip->ip = addr - 2;
 		break;
 	//SE Va, byte

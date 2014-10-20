@@ -364,7 +364,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		break;
 	//ADD Va, byte
 	case 0x7:
-		printf_debug("ADD V%x, %03i\n", r0, val);
+		printf_debug("ADD V%x [%03i], %03i\n", r0, chip->reg[r0], val);
 		chip->reg[r0] += val;
 		break;
 	//<...>
@@ -376,39 +376,39 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			chip->reg[r0] = chip->reg[r1];
 			break;
 		case 0x1:	//OR Va, Vb
-			printf_debug("OR V%x, V%x\n", r0, r1);
+			printf_debug("OR V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
 			chip->reg[r0] |= chip->reg[r1];
 			break;
 		case 0x2:	//AND Va, Vb
-			printf_debug("AND V%x, V%x\n", r0, r1);
+			printf_debug("AND V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
 			chip->reg[r0] &= chip->reg[r1];
 			break;
 		case 0x3:	//XOR Va, Vb
-			printf_debug("XOR V%x, V%x\n", r0, r1);
+			printf_debug("XOR V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
 			chip->reg[r0] ^= chip->reg[r1];
 			break;
 		case 0x4:	//ADD Va, Vb (w/ carry)
-			printf_debug("ADD V%x, V%x\n", r0, r1);
+			printf_debug("ADD V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
 			chip->reg[15] = ((chip->reg[r0] + chip->reg[r1]) > 255);			
 			chip->reg[r0] += chip->reg[r1];
 			break;
 		case 0x5:	//SUB Va, Vb (w/ borrow)
-			printf_debug("SUB V%x, V%x\n", r0, r1);
+			printf_debug("SUB V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
 			chip->reg[15] = !(chip->reg[r0] < chip->reg[r1]);
 			chip->reg[r0] -= chip->reg[r1];
 			break;
 		case 0x6:	//SHR Va[, Vb]
-			printf_debug("SHR V%x, V%x\n", r0, r1);
+			printf_debug("SHR V%x [%02Xh]\n", r0, chip->reg[r0]);
 			chip->reg[15] = (chip->reg[r0] & 0x01);
 			chip->reg[r0] >>= 1;
 			break;
 		case 0x7:	//SUBN Va, Vb
-			printf_debug("SUBN V%x, V%x\n", r0, r1);
+			printf_debug("SUBN V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
 			chip->reg[15] = !(chip->reg[r1] < chip->reg[r0]);
 			chip->reg[r0] =  chip->reg[r1] - chip->reg[r0];
 			break;
 		case 0xE:	//SHL Va[, Vb] 
-			printf_debug("SHL V%x, V%x\n", r0, r1);
+			printf_debug("SHL V%x [%02Xh]\n", r0, chip->reg[r0]);
 			chip->reg[15] = (chip->reg[r0] & 0x80) >> 7;
 			chip->reg[r0] <<= 1;
 			break;
@@ -425,7 +425,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		break;
 	//LD I, addr
 	case 0xA:
-		printf_debug("LD I, %03X\n", r0, addr);
+		printf_debug("LD I, %03Xh\n", r0, addr);
 		chip->regi = addr;
 		break;
 	//JP V0, addr
@@ -490,8 +490,8 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 					chip->beeper = chip->reg[r0];
 					break;
 				case 0x1E: //ADD I, Va
-					printf_debug("ADD I, V%x\n", r0);
-					chip->reg[15] = (chip->regi + chip->reg[r0] > 255);
+					printf_debug("ADD I [%03Xh], V%x [%02Xh]\n", chip->regi, r0, chip->reg[r0]);
+					chip->reg[15] = (chip->regi + chip->reg[r0] > 0x0FFF);
 					chip->regi += chip->reg[r0];
 					break;
 				case 0x29: //LD F, Va

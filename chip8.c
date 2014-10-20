@@ -132,6 +132,13 @@ uint8_t chip8_doEvents(Chip8 *chip, int wait)
 #ifdef DEBUG
 			if (ev.key.keysym.sym == SDLK_SPACE)
 				slow = (ev.type == SDL_KEYDOWN);
+
+			if ((ev.key.keysym.sym == SDLK_i) && (ev.type == SDL_KEYDOWN))
+			{
+				uint32_t ins;
+				if (fscanf(stdin, "%04X", &ins))
+					chip8_doInstruction(chip, ins);
+			}
 #endif
 
 			k = chip8_getKey(ev.key.keysym.sym);

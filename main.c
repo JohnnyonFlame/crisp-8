@@ -28,6 +28,10 @@ int main(int argc, char* argv[])
     conHandle = _open_osfhandle(stdHandle, _O_TEXT);
 
     *stdout = *_fdopen( conHandle, "w" );
+
+    stdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+    conHandle = _open_osfhandle(stdHandle, _O_TEXT);
+
     *stdin  = *_fdopen( conHandle, "r" );
 
     setvbuf( stdout, NULL, _IONBF, 0 );

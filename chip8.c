@@ -416,7 +416,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		break;
 	//LD I, addr
 	case 0xA:
-		printf_debug("LD I, V%x\n", r0);
+		printf_debug("LD I, %03X\n", r0, addr);
 		chip->regi = addr;
 		break;
 	//JP V0, addr
@@ -426,7 +426,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		break;
 	//RND Va, byte
 	case 0xC:
-		printf_debug("JP V%x, %02Xh\n", r0, val);
+		printf_debug("RAND V%x, %02Xh\n", r0, val);
 		chip->reg[r0] = rand() & val;
 		break;
 	//DRW Va, Vb, N

@@ -339,6 +339,8 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 	uint8_t val = LO_8(ins);
 	uint8_t op = LO1_4(ins);
 
+	int f_set;
+
 	switch(HI0_4(ins))
 	{
 	//Calls to system subroutines
@@ -464,13 +466,15 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			break;
 		case 0x4:	//ADD Va, Vb (w/ carry)
 			printf_debug("ADD V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
-			chip->reg[15] = ((chip->reg[r0] + chip->reg[r1]) > 255);
+			f_set = ((chip->reg[r0] + chip->reg[r1]) > 255);
 			chip->reg[r0] += chip->reg[r1];
+			chip->reg[15] = f_set;
 			break;
 		case 0x5:	//SUB Va, Vb (w/ borrow)
 			printf_debug("SUB V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
-			chip->reg[15] = !(chip->reg[r0] < chip->reg[r1]);
+			f_set = !(chip->reg[r0] < chip->reg[r1]);
 			chip->reg[r0] -= chip->reg[r1];
+			chip->reg[15] = f_set;
 			break;
 		case 0x6:	//SHR Va[, Vb]
 			printf_debug("SHR V%x [%02Xh]\n", r0, chip->reg[r0]);
@@ -479,8 +483,9 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			break;
 		case 0x7:	//SUBN Va, Vb
 			printf_debug("SUBN V%x [%03i], V%x [%03i]\n", r0, chip->reg[r0], r1, chip->reg[r1]);
-			chip->reg[15] = !(chip->reg[r1] < chip->reg[r0]);
+			f_set = !(chip->reg[r1] < chip->reg[r0]);
 			chip->reg[r0] =  chip->reg[r1] - chip->reg[r0];
+			chip->reg[15] = f_set;
 			break;
 		case 0xE:	//SHL Va[, Vb] 
 			printf_debug("SHL V%x [%02Xh]\n", r0, chip->reg[r0]);
@@ -568,6 +573,11 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 					printf_debug("ADD I [%03Xh], V%x [%02Xh]\n", chip->regi, r0, chip->reg[r0]);
 					chip->reg[15] = (chip->regi + chip->reg[r0] > 0x0FFF);
 					chip->regi += chip->reg[r0];
+
+					if (chip->reg[15])
+					{
+						chip->regi -= 0xFFF;
+					}
 					break;
 				case 0x29: //LD F, Va
 					printf_debug("LD V%x, LF\n", r0);

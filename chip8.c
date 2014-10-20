@@ -277,7 +277,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			break;
 		case 0x0EE: 	//Returns from subroutines
 			chip->ip = chip->stack[--chip->sp];
-			printf_debug("RET\n");
+			printf_debug("RET; <--\n");
 			break;
 		case 0x0FB:
 			chip8_scrollScreen_right(chip);
@@ -323,12 +323,12 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		break;
 	//JP addr
 	case 0x1:
-		printf_debug("JP %03Xh ;[from %03X]\n", addr, chip->ip);
+		printf_debug("JP %03Xh ;<--\n", addr, chip->ip);
 		chip->ip = addr - 2;
 		break;
 	//CALL addr
 	case 0x2:
-		printf_debug("CALL %03Xh\n", addr);
+		printf_debug("CALL %03Xh ;<--\n", addr);
 		chip->stack[chip->sp++] = chip->ip;
 		if (chip->sp > 16)
 		{

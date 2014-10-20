@@ -272,24 +272,24 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 		switch(addr)
 		{
 		case 0x0E0: 	//Clears the display
-			chip8_clearScreen(chip);
 			printf_debug("CLS\n");
+			chip8_clearScreen(chip);
 			break;
 		case 0x0EE: 	//Returns from subroutines
-			chip->ip = chip->stack[--chip->sp];
 			printf_debug("RET; <--\n");
+			chip->ip = chip->stack[--chip->sp];
 			break;
 		case 0x0FB:
-			chip8_scrollScreen_right(chip);
 			printf_debug("SCRR\n");
+			chip8_scrollScreen_right(chip);
 			break;
 		case 0x0FC:
-			chip8_scrollScreen_left(chip);
 			printf_debug("SCRL\n");
+			chip8_scrollScreen_left(chip);
 			break;
 		case 0x0FD:
-			chip->ip = 0x1000; //step outside bounds- kills the interpreter
 			printf_debug("EXIT\n");
+			chip->ip = 0x1000; //step outside bounds- kills the interpreter
 			break;
 		case 0x0FE:
 			printf_debug("MODE 1\n");
@@ -317,7 +317,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 				chip8_scrollScreen_down(chip, op);
 			}
 			else
-				printf_debug("Unknown instruction %04X\n", ins);
+				printf_debug(";Unknown instruction %04X\n", ins);
 			break;
 		}
 		break;

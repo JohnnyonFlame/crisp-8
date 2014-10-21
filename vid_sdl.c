@@ -228,6 +228,8 @@ void vid_updateSize(uint32_t w, uint32_t h)
 
 void vid_flipSurface(Chip8 *chip)
 {
+	SDL_FillRect(vid_surface, 0, vid_bgColors);
+
 	if (vid_stretch & VID_STRETCH)
 		vid_flipSurface_stretch(chip);
 	else

@@ -2,16 +2,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <SDL.h>
-#include <SDL_image.h>
 
 #include "shared.h"
 #include "config.h"
 #include "video.h"
+#include "font.h"
 
 uint32_t vid_palette[256];
 uint8_t  vid_fadeBuffer[128 * 64];
 
-SDL_Surface *surface = NULL;
+SDL_Surface *vid_surface = NULL;
 
 void vid_generatePalette(uint32_t fg, uint32_t bg)
 {
@@ -76,12 +76,12 @@ static void vid_flipSurface_stretch(Chip8 *chip)
 	uint32_t alpha, *scr;
 	uint32_t acc_x = 0, acc_y = 0;
 
-	scr = (uint32_t *)surface->pixels;
-	pitch1 = surface->pitch / surface->format->BytesPerPixel;
+	scr = (uint32_t *)vid_surface->pixels;
+	pitch1 = vid_surface->pitch / vid_surface->format->BytesPerPixel;
 
 	//Scaling factors
-	scale_w = (surface->w << 8) / vid_width;
-	scale_h = (surface->h << 8) / vid_height;
+	scale_w = (vid_surface->w << 8) / vid_width;
+	scale_h = (vid_surface->h << 8) / vid_height;
 
 	if (vid_stretch & VID_STRETCH_ASPECT)
 	{
@@ -101,11 +101,11 @@ static void vid_flipSurface_stretch(Chip8 *chip)
 	coef_x = (scale_w & 0x000000FF);
 	coef_y = (scale_h & 0x000000FF);
 
-	pitch2 = surface->w - ((scale_w * vid_width) >> 8);
+	pitch2 = vid_surface->w - ((scale_w * vid_width) >> 8);
 
 
-	scr += (surface->w - ((scale_w * vid_width) >> 8)) / 2;
-	scr += pitch1 * ((surface->h - ((scale_h * vid_height) >> 8)) / 2);
+	scr += (vid_surface->w - ((scale_w * vid_width) >> 8)) / 2;
+	scr += pitch1 * ((vid_surface->h - ((scale_h * vid_height) >> 8)) / 2);
 
 	scale_w >>= 8;
 	scale_h >>= 8;
@@ -146,7 +146,7 @@ static void vid_flipSurface_stretch(Chip8 *chip)
 		acc_y = acc_y % FIX8_ONE;
 	}
 
-	SDL_Flip(surface);
+	SDL_Flip(vid_surface);
 }
 
 static void vid_flipSurface_original(Chip8 *chip)
@@ -154,11 +154,11 @@ static void vid_flipSurface_original(Chip8 *chip)
 	int i, j, pitch;
 	uint32_t alpha, *scr;
 	
-	scr = (uint32_t *)surface->pixels;
-	pitch = (surface->pitch / surface->format->BytesPerPixel) - vid_width;
+	scr = (uint32_t *)vid_surface->pixels;
+	pitch = (vid_surface->pitch / vid_surface->format->BytesPerPixel) - vid_width;
 
-	scr += (surface->w - vid_width) / 2;
-	scr += (pitch + vid_width) * ((surface->h - vid_height) / 2);
+	scr += (vid_surface->w - vid_width) / 2;
+	scr += (pitch + vid_width) * ((vid_surface->h - vid_height) / 2);
 
 	for (i=0; i<vid_height; i++)
 	{
@@ -184,7 +184,7 @@ static void vid_flipSurface_original(Chip8 *chip)
 		scr += pitch;
 	}
 
-	SDL_Flip(surface);
+	SDL_Flip(vid_surface);
 }
 
 
@@ -199,9 +199,9 @@ int vid_init()
 	SDL_WM_SetCaption("Crisp-8", NULL);
 	SDL_ShowCursor(SDL_DISABLE);
 
-	surface = SDL_SetVideoMode(320, 240, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	vid_surface = SDL_SetVideoMode(320, 240, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
 	
-	if (!surface)
+	if (!vid_surface)
 	{
 		printf("Error, %s.\n", SDL_GetError());
 		return 0;
@@ -210,11 +210,15 @@ int vid_init()
 	vid_generatePalette(vid_fgColors, vid_bgColors);
 	vid_clearFadeBuffer();
 	
+	if (font_init() == -1)
+		return 0;
+
 	return 1;
 }
 
 void vid_deinit()
 {
+	font_deinit();
 	SDL_Quit();
 }
 

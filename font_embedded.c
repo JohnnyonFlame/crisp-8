@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#include "font.h"
+#include "font_embedded.h"
 
-uint8_t font[] = 
+uint8_t embedded_fontSmall[] = 
 {
 	0xF0,0x90,0x90,0x90,0xF0,
 	0x20,0x60,0x20,0x20,0x70,
@@ -23,7 +23,7 @@ uint8_t font[] =
 };
 
 //Thanks for HI-Ban for de-uglifying my font.
-uint8_t bigfont[] = 
+uint8_t embedded_fontBig[] = 
 {
 	0b00111100, 
 	0b01100110, 

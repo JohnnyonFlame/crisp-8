@@ -1,7 +1,7 @@
 TARGET=crisp8
 
 DEBUG?=0
-SRC=main.c font.c chip8.c beeper_mixer.c vid_sdl.c config.c
+SRC=main.c font_embedded.c chip8.c beeper_mixer.c vid_sdl.c config.c
 OBJ=$(patsubst %.c, %.o, $(SRC))
 
 SDL_CFLAGS=$(shell sdl-config --cflags)

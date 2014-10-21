@@ -4,7 +4,7 @@
 
 #include "shared.h"
 #include "chip8.h"
-#include "font.h"
+#include "font_embedded.h"
 #include "beeper.h"
 #include "video.h"
 
@@ -61,8 +61,8 @@ int chip8_loadRom(Chip8 *chip, char *file)
 void chip8_reset(Chip8 *chip)
 {
 	memset(chip,  0, sizeof(Chip8)); 
-	memcpy(&chip->ram[0],    font,    16*5);
-	memcpy(&chip->ram[16*5], bigfont, 16*10);
+	memcpy(&chip->ram[0],    embedded_fontSmall,    16*5);
+	memcpy(&chip->ram[16*5], embedded_fontBig, 16*10);
 
 	chip->hires = 0;
 	chip->ip = 0x200;

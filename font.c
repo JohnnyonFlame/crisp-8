@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <SDL.h>
 #include <SDL_image.h>
 
 #include "shared.h"
+#include "config.h"
+#include "video.h"
 #include "font.h"
 
 Font *font;
@@ -66,5 +69,75 @@ void font_deinit()
 			SDL_FreeSurface(font->surface);
 
 		free(font);
+	}
+}
+
+void font_renderText(int x, int y, const char *fmt, ...)
+{
+	char text[1024];
+	va_list args;
+
+	va_start(args, fmt);
+		vsnprintf(text, 1024, fmt, args);
+	va_end(args);
+
+	uint32_t *dst = (uint32_t*)vid_surface->pixels;
+	uint32_t *src = (uint32_t*)font->surface->pixels;
+
+	int src_pitch = (font->surface->pitch / vid_surface->format->BytesPerPixel);
+	int dst_pitch = (vid_surface->pitch / vid_surface->format->BytesPerPixel);
+
+	int _x = x, _y = y;
+	char c;
+
+	int cx, cw;
+
+	int i, j, k;
+	for (i=0; (i!=-1) && (i<1024); i++)
+	{
+		c = text[i];
+
+		switch(c)
+		{
+		case '\0':
+			i = -2;
+			break;
+		case '\n':
+			_x = x;
+			_y += font->surface->h;
+			break;
+		case '\t':
+			_x += 6;
+			break;
+		case ' ':
+			_x += 3;
+			break;
+		default:
+			if (c < '!')
+				c = '?';
+
+			cx = font->starts[c - '!'] + 1;
+			cw = font->starts[c - '!' + 1] - font->starts[c - '!'] - 1;
+
+			for (j=0; j<font->surface->h; j++)
+			{
+				if (j + _y >= vid_surface->h)
+					break;
+				if (j + _y < 0)
+					continue;
+
+				for (k=0; k<cw; k++)
+				{
+					if ((k + _x >= vid_surface->w) || (k + _x < 0))
+						continue;
+
+					if ((*(src + (src_pitch * j) + k + cx) & 0x00FFFFFF) == FONT_MASK)
+						*(dst + (dst_pitch * (j + _y)) + k + _x) = vid_fgColors;
+				}
+			}
+
+			_x += cw;
+			break;
+		}
 	}
 }

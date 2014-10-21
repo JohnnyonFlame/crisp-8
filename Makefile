@@ -14,7 +14,7 @@ ifneq (, $(findstring MINGW32, $(shell uname -s)))
 	CFLAGS+=-DWINDOWS
 	CC=mingw32-gcc
 	ifeq (1, $(DEBUG))
-		CFLAGS+=-DDEBUG
+		CFLAGS+=-DDEBUG -ggdb
 	endif
 endif
 

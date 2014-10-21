@@ -145,8 +145,6 @@ static void vid_flipSurface_stretch(Chip8 *chip)
 		scr += pitch2;
 		acc_y = acc_y % FIX8_ONE;
 	}
-
-	SDL_Flip(vid_surface);
 }
 
 static void vid_flipSurface_original(Chip8 *chip)
@@ -183,8 +181,6 @@ static void vid_flipSurface_original(Chip8 *chip)
 		
 		scr += pitch;
 	}
-
-	SDL_Flip(vid_surface);
 }
 
 
@@ -236,5 +232,7 @@ void vid_flipSurface(Chip8 *chip)
 		vid_flipSurface_stretch(chip);
 	else
 		vid_flipSurface_original(chip);
+
+	SDL_Flip(vid_surface);
 	//TODO:: Flip surface code
 }

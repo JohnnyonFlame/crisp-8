@@ -3,7 +3,7 @@
 
 typedef struct {
 	uint32_t height;
-	uint32_t starts[94];
+	uint32_t starts[96];
 	SDL_Surface *surface;
 } Font;
 
@@ -12,6 +12,7 @@ typedef struct {
 
 int font_init();
 void font_deinit();
+void font_renderText(int x, int y, const char *fmt, ...);
 
 extern Font *font;
 

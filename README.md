@@ -20,3 +20,6 @@ generated from it.]
 
    The code is licensed under the GNU GPLv2, feel free to study and take bits
 from this code. Feel free to contribute and/or port it. It's free.
+
+   The font.png resource was authored by hi-ban, and is licensed under 
+CC BY-SA 1.0. Thanks!

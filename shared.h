@@ -56,6 +56,7 @@ enum
 	CHIP8_DEAD = 0,
 	CHIP8_RUNNING,
 	CHIP8_PAUSED,
+	CHIP8_EXIT,
 };
 
 #define HI0_4(a) (((a) >> 12) & 0x000F)

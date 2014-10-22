@@ -3,7 +3,7 @@
 
 int  menu_doEvents();
 void menu_flipSurface();
-int  menu_doStep(Chip8 **chip);
+void menu_doStep(Chip8 **chip);
 void menu_invokeMenu();
 
 #endif //__MENU_H__

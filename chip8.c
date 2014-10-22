@@ -63,7 +63,7 @@ void chip8_zeroTimers()
 	time_p = SDL_GetTicks();
 }
 
-void chip8_invokeEmulation(Chip8 *chip)
+void chip8_invokeEmulator(Chip8 *chip)
 {
 	//Avoid keys getting stuck
 	int i;
@@ -82,9 +82,6 @@ int chip8_loadRom(Chip8 *chip, char *file)
 		printf("Error: Unable to open file %s\n", file);
 		return -1;
 	}
-	
-	if (chip->rom)
-		free(chip->rom);
 
 	chip8_zeroChip(chip);
 	fread(&chip->ram[0] + 0x200, 1, 0xFFF - 0x200, rom);
@@ -93,14 +90,26 @@ int chip8_loadRom(Chip8 *chip, char *file)
 	if (((chip->ram[0x200] << 8) | chip->ram[0x201]) == 0x1260)
 	{
 		vid_height = 64;
-		vid_updateSize(64, 64);
 		chip->ip = 0x2c0;
 	}
+	else
+	{
+		vid_width = 64;
+		vid_height = 32;
+	}
 
-	chip->rom = strdup(file);
+	if (chip->rom && (strcmp(chip->rom, file)))
+	{
+		free(chip->rom);
+		chip->rom = strdup(file);
+	}
+	else if (!chip->rom)
+		chip->rom = strdup(file);
+
 	chip->status = CHIP8_RUNNING;
 
 	chip8_zeroTimers();
+	vid_updateSize(vid_width, vid_height);
 
 	return 1;
 }

@@ -10,10 +10,12 @@
 #include "video.h"
 #include "font.h"
 
+static SDL_Surface *prev_screen = NULL;
+
 typedef struct MenuEntry
 {
-	void (*callback_Ev)(SDL_Event *ev, int index);
-	void (*callback_Draw)(int index);
+	void (*callback_Ev)(Chip8* chip, SDL_Event *ev, int index);
+	void (*callback_Draw)(Chip8* chip, int index);
 	void *data;
 } MenuEntry;
 
@@ -25,16 +27,39 @@ typedef struct Menu
 
 Menu *menu_current = NULL;
 
-static void mainMenu_resumeEv(SDL_Event *ev, int index);
-static void mainMenu_resumeDraw(int index);
+static void generic_labelDraw(Chip8* chip, int index);
+static void generic_buttonDraw(Chip8* chip, int index);
+static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index);
+static void mainMenu_resetEv(Chip8* chip, SDL_Event *ev, int index);
+static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index);
 
 Menu menu_main =
 {
 	.entries = {
 		{
+			NULL,
+			generic_labelDraw,
+			"Crisp-8 Main Menu",
+		},
+		{
+			NULL,
+			generic_labelDraw,
+			"",
+		},
+		{
 			mainMenu_resumeEv,
-			mainMenu_resumeDraw,
-			NULL
+			generic_buttonDraw,
+			"Resume Emulator"
+		},
+		{
+			mainMenu_resetEv,
+			generic_buttonDraw,
+			"Reset Emulator"
+		},
+		{
+			mainMenu_exitEv,
+			generic_buttonDraw,
+			"Exit Emulator"
 		},
 		{
 			NULL,
@@ -42,20 +67,72 @@ Menu menu_main =
 			NULL,
 		}
 	},
-	.selected = 0
+	.selected = 2
 };
 
-static void mainMenu_resumeEv(SDL_Event *ev, int index)
+static void generic_labelDraw(Chip8 *chip, int index)
 {
-	printf("ok");
+	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+			menu_current->entries[index].data);
 }
 
-static void mainMenu_resumeDraw(int index)
+static void generic_buttonDraw(Chip8* chip, int index)
 {
-	printf("ok");
+	int sel = (index == menu_current->selected);
+	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+			"%s%s%s", (sel) ? "[": "", menu_current->entries[index].data, (sel) ? "]": "");
 }
 
-static SDL_Surface *prev_screen = NULL;
+static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		chip8_invokeEmulator(chip);
+}
+
+
+static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		chip->status = CHIP8_EXIT;
+}
+
+static void mainMenu_resetEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		chip8_reset(chip);
+}
+
+static void menu_selectNext(Menu *menu)
+{
+	int i = menu->selected;
+	while(menu->entries[i+1].callback_Draw && menu->entries[i+1].callback_Ev)
+	{
+		i++;
+
+		if (menu->entries[i].callback_Ev)
+		{
+			menu->selected = i;
+			break;
+		}
+	}
+
+}
+
+static void menu_selectPrevious(Menu *menu)
+{
+	int i = menu->selected;
+	while((i > 0) && menu->entries[i-1].callback_Draw && menu->entries[i-1].callback_Ev)
+	{
+		i--;
+
+		if (menu->entries[i].callback_Ev)
+		{
+			menu->selected = i;
+			break;
+		}
+
+	}
+}
 
 int  menu_doEvents(Chip8 *chip)
 {
@@ -65,22 +142,37 @@ int  menu_doEvents(Chip8 *chip)
 		switch(ev.type)
 		{
 		case SDL_QUIT:
-			return 0;
+			chip->status = CHIP8_EXIT;
 			break;
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
 			switch (ev.key.keysym.sym)
 			{
+			case SDLK_DOWN:
+				if (ev.type == SDL_KEYDOWN)
+					menu_selectNext(menu_current);
+				break;
+			case SDLK_UP:
+				if (ev.type == SDL_KEYDOWN)
+					menu_selectPrevious(menu_current);
+				break;
 			case SDLK_ESCAPE:
 				if ((ev.type == SDL_KEYDOWN) && (chip->status == CHIP8_PAUSED))
-					chip8_invokeEmulation(chip);
+					chip8_invokeEmulator(chip);
 				break;
 			default:
-
+				if ((menu_current) &&
+					(menu_current->entries[menu_current->selected].callback_Ev))
+					menu_current->entries[menu_current->selected].callback_Ev
+						(chip, &ev, menu_current->selected);
 				break;
 			}
 			break;
 		default:
+			if ((menu_current) &&
+				(menu_current->entries[menu_current->selected].callback_Ev))
+				menu_current->entries[menu_current->selected].callback_Ev
+					(chip, &ev, menu_current->selected);
 			break;
 		}
 	}
@@ -122,17 +214,22 @@ void menu_invokeMenu()
 
 }
 
-void menu_flipSurface()
+void menu_flipSurface(Chip8 *chip)
 {
 	SDL_BlitSurface(prev_screen, 0, vid_surface, 0);
+
+	int i = 0;
+	while (menu_current->entries[i].callback_Draw != NULL)
+	{
+		menu_current->entries[i].callback_Draw(chip, i);
+		i++;
+	}
+
 	SDL_Flip(vid_surface);
 }
 
-int menu_doStep(Chip8 **chip)
+void menu_doStep(Chip8 **chip)
 {
-	int ret;
-	ret = menu_doEvents(*chip);
-	menu_flipSurface();
-
-	return ret;
+	menu_doEvents(*chip);
+	menu_flipSurface(*chip);
 }

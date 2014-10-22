@@ -57,12 +57,10 @@ int main(int argc, char* argv[])
 
 	beeper_init();
 
-	int keepalive = 1;
-
 	Chip8* chip = (Chip8*)calloc(1, sizeof(Chip8));
 	if (chip8_loadRom(chip, argv[1]) == -1)
 	{
-		keepalive = 0;
+		chip->status = CHIP8_EXIT;
 		//TODO:: Create helper_sdl.c
 		SDL_FillRect(vid_surface, 0, vid_bgColors);
 		font_renderText(FONT_CENTERED, vid_surface->w/2, 0, "Unable to open %s!\nPlease check if file exists.", argv[1]);
@@ -70,7 +68,7 @@ int main(int argc, char* argv[])
 		SDL_Delay(3000);
 	}
 	
-	while(keepalive)
+	while(chip->status != CHIP8_EXIT)
 	{
 		switch(chip->status)
 		{
@@ -79,14 +77,11 @@ int main(int argc, char* argv[])
 			break;
 		case CHIP8_DEAD:
 		case CHIP8_PAUSED:
-			keepalive = menu_doStep(&chip);
+			menu_doStep(&chip);
 			break;
 		default:
 			break;
 		}
-
-		if (!keepalive)
-			break;
 	}
 	
 	vid_deinit();

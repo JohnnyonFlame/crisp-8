@@ -72,6 +72,9 @@ int chip8_loadRom(Chip8 *chip, char *file)
 		return -1;
 	}
 	
+	if (chip->rom)
+		free(chip->rom);
+
 	chip8_zeroChip(chip);
 	fread(&chip->ram[0] + 0x200, 1, 0xFFF - 0x200, rom);
 	fclose(rom);
@@ -82,9 +85,6 @@ int chip8_loadRom(Chip8 *chip, char *file)
 		vid_updateSize(64, 64);
 		chip->ip = 0x2c0;
 	}
-	
-	if (chip->rom)
-		free(chip->rom);
 
 	chip->rom = strdup(file);
 	chip->status = CHIP8_RUNNING;

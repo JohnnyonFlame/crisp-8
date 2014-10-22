@@ -17,12 +17,6 @@ typedef struct Menu
 
 static SDL_Surface *prev_screen = NULL;
 
-static void menu_invokeEmulation(Chip8 *chip)
-{
-	chip8_zeroTimers();
-	chip->status = CHIP8_RUNNING;
-}
-
 int  menu_doEvents(Chip8 *chip)
 {
 	SDL_Event ev;
@@ -39,7 +33,7 @@ int  menu_doEvents(Chip8 *chip)
 			{
 			case SDLK_ESCAPE:
 				if ((ev.type == SDL_KEYDOWN) && (chip->status == CHIP8_PAUSED))
-					menu_invokeEmulation(chip);
+					chip8_invokeEmulation(chip);
 				break;
 			default:
 				break;

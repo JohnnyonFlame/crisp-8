@@ -63,6 +63,17 @@ void chip8_zeroTimers()
 	time_p = SDL_GetTicks();
 }
 
+void chip8_invokeEmulation(Chip8 *chip)
+{
+	//Avoid keys getting stuck
+	int i;
+	for (i=0; i<16; i++)
+		chip->key[i] = 0;
+
+	chip8_zeroTimers();
+	chip->status = CHIP8_RUNNING;
+}
+
 int chip8_loadRom(Chip8 *chip, char *file)
 {
 	FILE *rom;

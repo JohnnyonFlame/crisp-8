@@ -158,4 +158,5 @@ void menu_doStep(Chip8 **chip)
 {
 	menu_doEvents(*chip);
 	menu_flipSurface(*chip);
+	SDL_Delay(33);
 }

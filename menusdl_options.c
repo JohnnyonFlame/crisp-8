@@ -12,10 +12,8 @@
 #include "menu_sdl.h"
 
 static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index);
-static void optionsMenu_scaleEnableDraw(Chip8 *chip, int index);
-static void optionsMenu_scaleEnableEv(Chip8* chip, SDL_Event *ev, int index);
-static void optionsMenu_scaleAspectDraw(Chip8 *chip, int index);
-static void optionsMenu_scaleAspectEv(Chip8* chip, SDL_Event *ev, int index);
+static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index);
+static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index);
 
 Menu menu_optionsMenu = {
 	.entries =
@@ -31,13 +29,8 @@ Menu menu_optionsMenu = {
 			""
 		},
 		{
-			optionsMenu_scaleEnableEv,
-			optionsMenu_scaleEnableDraw,
-			NULL
-		},
-		{
-			optionsMenu_scaleAspectEv,
-			optionsMenu_scaleAspectDraw,
+			optionsMenu_scaleSelectEv,
+			optionsMenu_scaleSelectDraw,
 			NULL
 		},
 		{
@@ -50,39 +43,33 @@ Menu menu_optionsMenu = {
 	.selected = 2
 };
 
-static void optionsMenu_scaleEnableDraw(Chip8 *chip, int index)
-{
-	int sel = (index == menu_current->selected);
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
-			"%sScaling: %s%s", (sel) ? "[ " : "",
-			(vid_stretch & VID_STRETCH) ? "enabled" : "disabled",
-			(sel) ? " ]" : "");
-}
-
-static void optionsMenu_scaleEnableEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		vid_stretch ^= VID_STRETCH;
-}
-
-static void optionsMenu_scaleAspectDraw(Chip8 *chip, int index)
+static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index)
 {
 	int sel = (index == menu_current->selected);
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sAspect: %s%s%s", (sel) ? "[ " : "",
-			(vid_stretch & VID_STRETCH_ASPECT) ? "Aspect" : "Full",
+			(vid_stretch & VID_STRETCH)
+			? (vid_stretch & VID_STRETCH_ASPECT) ? "Aspect" : "Full"
+			: "Off",
 			(vid_stretch & VID_STRETCH_INTEGER) ? " & Integer" : "",
 			(sel) ? " ]" : "");
 }
 
-static void optionsMenu_scaleAspectEv(Chip8* chip, SDL_Event *ev, int index)
+static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index)
 {
 	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
 	{
-		if (vid_stretch & VID_STRETCH_INTEGER)
-			vid_stretch ^= VID_STRETCH_INTEGER | VID_STRETCH_ASPECT;
+		if (vid_stretch == (VID_STRETCH | VID_STRETCH_INTEGER))
+			vid_stretch = 0;
 		else
-			vid_stretch ^= VID_STRETCH_INTEGER;
+		{
+			if (!vid_stretch)
+				vid_stretch = VID_STRETCH | VID_STRETCH_ASPECT;
+			else if (vid_stretch & VID_STRETCH_INTEGER)
+				vid_stretch ^= VID_STRETCH_INTEGER | VID_STRETCH_ASPECT;
+			else
+				vid_stretch ^= VID_STRETCH_INTEGER;
+		}
 	}
 
 }

@@ -12,6 +12,7 @@
 #include "menu_sdl.h"
 
 static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index);
+static void mainMenu_optionsEv(Chip8* chip, SDL_Event *ev, int index);
 static void mainMenu_resetEv(Chip8* chip, SDL_Event *ev, int index);
 static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index);
 
@@ -31,17 +32,22 @@ Menu menu_mainMenu =
 		{
 			mainMenu_resumeEv,
 			generic_buttonDraw,
-			"Resume Emulator"
+			"Resume"
+		},
+		{
+			mainMenu_optionsEv,
+			generic_buttonDraw,
+			"Options"
 		},
 		{
 			mainMenu_resetEv,
 			generic_buttonDraw,
-			"Reset Emulator"
+			"Reset"
 		},
 		{
 			mainMenu_exitEv,
 			generic_buttonDraw,
-			"Exit Emulator"
+			"Exit"
 		},
 		{
 			NULL,
@@ -58,6 +64,11 @@ static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index)
 		chip8_invokeEmulator(chip);
 }
 
+static void mainMenu_optionsEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		menu_current = &menu_optionsMenu;
+}
 
 static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index)
 {

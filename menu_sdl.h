@@ -15,6 +15,8 @@ typedef struct Menu
 } Menu;
 
 extern Menu menu_mainMenu;
+extern Menu menu_optionsMenu;
+extern Menu *menu_current;
 
 void generic_labelDraw(Chip8* chip, int index);
 void generic_buttonDraw(Chip8* chip, int index);

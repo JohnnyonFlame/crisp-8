@@ -10,10 +10,50 @@
 #include "video.h"
 #include "font.h"
 
+typedef struct MenuEntry
+{
+	void (*callback_Ev)(SDL_Event *ev, int index);
+	void (*callback_Draw)(int index);
+	void *data;
+} MenuEntry;
+
 typedef struct Menu
 {
-
+	MenuEntry entries[20];
+	int selected;
 } Menu;
+
+Menu *menu_current = NULL;
+
+static void mainMenu_resumeEv(SDL_Event *ev, int index);
+static void mainMenu_resumeDraw(int index);
+
+Menu menu_main =
+{
+	.entries = {
+		{
+			mainMenu_resumeEv,
+			mainMenu_resumeDraw,
+			NULL
+		},
+		{
+			NULL,
+			NULL,
+			NULL,
+		}
+	},
+	.selected = 0
+};
+
+static void mainMenu_resumeEv(SDL_Event *ev, int index)
+{
+	printf("ok");
+}
+
+static void mainMenu_resumeDraw(int index)
+{
+	printf("ok");
+}
 
 static SDL_Surface *prev_screen = NULL;
 
@@ -36,6 +76,7 @@ int  menu_doEvents(Chip8 *chip)
 					chip8_invokeEmulation(chip);
 				break;
 			default:
+
 				break;
 			}
 			break;
@@ -49,6 +90,8 @@ int  menu_doEvents(Chip8 *chip)
 #define RGBA_LOWERBITS 0xFCFCFCFC
 void menu_invokeMenu()
 {
+	menu_current = &menu_main;
+
 	//We dont want endless annoying sounds, do we?
 	if (beeper_status == BEEPER_LOOPING)
 		beeper_endLoop();

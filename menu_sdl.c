@@ -105,7 +105,7 @@ int  menu_doEvents(Chip8 *chip)
 	return 1;
 }
 
-#define RGBA_LOWERBITS 0xF8F8F8F8
+#define RGBA_LOWERBITS 0xFCFCFCFC
 void menu_invokeMenu()
 {
 	menu_current = &menu_mainMenu;
@@ -132,7 +132,7 @@ void menu_invokeMenu()
 		for (j=0; j<vid_surface->w; j++)
 		{
 			*img &= RGBA_LOWERBITS;
-			*img >>= 3;
+			*img >>= 2;
 			img++;
 		}
 		img += pitch;

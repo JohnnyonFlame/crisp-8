@@ -9,97 +9,23 @@
 #include "beeper.h"
 #include "video.h"
 #include "font.h"
+#include "menu_sdl.h"
 
 static SDL_Surface *prev_screen = NULL;
 
-typedef struct MenuEntry
-{
-	void (*callback_Ev)(Chip8* chip, SDL_Event *ev, int index);
-	void (*callback_Draw)(Chip8* chip, int index);
-	void *data;
-} MenuEntry;
-
-typedef struct Menu
-{
-	MenuEntry entries[20];
-	int selected;
-} Menu;
-
 Menu *menu_current = NULL;
 
-static void generic_labelDraw(Chip8* chip, int index);
-static void generic_buttonDraw(Chip8* chip, int index);
-static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index);
-static void mainMenu_resetEv(Chip8* chip, SDL_Event *ev, int index);
-static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index);
-
-Menu menu_main =
-{
-	.entries = {
-		{
-			NULL,
-			generic_labelDraw,
-			"Crisp-8 Main Menu",
-		},
-		{
-			NULL,
-			generic_labelDraw,
-			"",
-		},
-		{
-			mainMenu_resumeEv,
-			generic_buttonDraw,
-			"Resume Emulator"
-		},
-		{
-			mainMenu_resetEv,
-			generic_buttonDraw,
-			"Reset Emulator"
-		},
-		{
-			mainMenu_exitEv,
-			generic_buttonDraw,
-			"Exit Emulator"
-		},
-		{
-			NULL,
-			NULL,
-			NULL,
-		}
-	},
-	.selected = 2
-};
-
-static void generic_labelDraw(Chip8 *chip, int index)
+void generic_labelDraw(Chip8 *chip, int index)
 {
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			menu_current->entries[index].data);
 }
 
-static void generic_buttonDraw(Chip8* chip, int index)
+void generic_buttonDraw(Chip8* chip, int index)
 {
 	int sel = (index == menu_current->selected);
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%s%s%s", (sel) ? "[": "", menu_current->entries[index].data, (sel) ? "]": "");
-}
-
-static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		chip8_invokeEmulator(chip);
-}
-
-
-static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		chip->status = CHIP8_EXIT;
-}
-
-static void mainMenu_resetEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		chip8_reset(chip);
 }
 
 static void menu_selectNext(Menu *menu)
@@ -182,7 +108,7 @@ int  menu_doEvents(Chip8 *chip)
 #define RGBA_LOWERBITS 0xFCFCFCFC
 void menu_invokeMenu()
 {
-	menu_current = &menu_main;
+	menu_current = &menu_mainMenu;
 
 	//We dont want endless annoying sounds, do we?
 	if (beeper_status == BEEPER_LOOPING)

@@ -14,6 +14,8 @@
 #include "video.h"
 #include "chip8.h"
 #include "beeper.h"
+#include "menu.h"
+#include "font.h"
 
 int main(int argc, char* argv[])
 {	
@@ -37,12 +39,6 @@ int main(int argc, char* argv[])
     setvbuf( stdout, NULL, _IONBF, 0 );
     setvbuf( stdin, NULL, _IONBF, 0 );
 #endif
-
-	if (!vid_init())
-		return -1;
-		
-	beeper_init();
-
 	if (argc < 2) 
 	{
 		char *filename = strrchr(argv[0], '\\'); 
@@ -55,41 +51,42 @@ int main(int argc, char* argv[])
 		printf("Crisp-8, Syntax:\n%s FILE\n", filename);
 		return -1;
 	}
-	
+
+	if (!vid_init())
+		return -1;
+
+	beeper_init();
+
+	int keepalive = 1;
+
 	Chip8* chip = (Chip8*)calloc(1, sizeof(Chip8));
-	chip8_loadRom(chip, argv[1]);
+	if (chip8_loadRom(chip, argv[1]) == -1)
+	{
+		keepalive = 0;
+		//TODO:: Create helper_sdl.c
+		SDL_FillRect(vid_surface, 0, vid_bgColors);
+		font_renderText(FONT_CENTERED, vid_surface->w/2, 0, "Unable to open %s!\nPlease check if file exists.", argv[1]);
+		SDL_Flip(vid_surface);
+		SDL_Delay(3000);
+	}
 	
-	while((chip->ip > 0) && (chip->ip < 0xFFF))
-	{	
-		chip8_doEvents(chip, 0);
-		
-#ifdef DEBUG
-		uint16_t old_ip = chip->ip;
-#endif
-
-		//fetch instruction
-		uint16_t ins = (chip->ram[chip->ip+1]) | (chip->ram[chip->ip] << 8);
-
-		//Decode & Execute instruction
-		chip8_doInstruction(chip, ins);
-		
-#ifdef DEBUG
-		int i;
-		for (i=0; i<chip->br_count; i++)
+	while(keepalive)
+	{
+		switch(chip->status)
 		{
-			if (old_ip == chip->br_list[i])
-			{
-				printf("Reached breakpoint %i\n", i);
-				chip8_invokeDebug(chip);
-			}
+		case CHIP8_RUNNING:
+			chip8_doStep(chip);
+			break;
+		case CHIP8_DEAD:
+		case CHIP8_PAUSED:
+			keepalive = menu_doStep(&chip);
+			break;
+		default:
+			break;
 		}
-#endif
 
-		//walk instruction pointer
-		chip->ip += 2;
-		
-		//Finish frame, deal with timers.
-		chip8_doTimers(chip);
+		if (!keepalive)
+			break;
 	}
 	
 	vid_deinit();

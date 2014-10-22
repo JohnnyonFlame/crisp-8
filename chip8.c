@@ -35,6 +35,22 @@ uint8_t chip8_getKey(SDLKey key)
 	return 0xFF;
 }
 
+void chip8_reset(Chip8 *chip)
+{
+	chip8_loadRom(chip, chip->rom);
+}
+
+void chip8_zeroChip(Chip8 *chip)
+{
+	memset(chip,  0, sizeof(Chip8));
+	memcpy(&chip->ram[0],    embedded_fontSmall, 16*5);
+	memcpy(&chip->ram[16*5], embedded_fontBig,   16*10);
+
+	chip->hires = 0;
+	chip->ip = 0x200;
+	chip->sp = 0;
+}
+
 int chip8_loadRom(Chip8 *chip, char *file)
 {
 	FILE *rom;
@@ -44,7 +60,7 @@ int chip8_loadRom(Chip8 *chip, char *file)
 		return -1;
 	}
 	
-	chip8_reset(chip);
+	chip8_zeroChip(chip);
 	fread(&chip->ram[0] + 0x200, 1, 0xFFF - 0x200, rom);
 	fclose(rom);
 	
@@ -55,18 +71,13 @@ int chip8_loadRom(Chip8 *chip, char *file)
 		chip->ip = 0x2c0;
 	}
 	
+	if (chip->rom)
+		free(chip->rom);
+
+	chip->rom = strdup(file);
+	chip->status = CHIP8_RUNNING;
+
 	return 1;
-}
-
-void chip8_reset(Chip8 *chip)
-{
-	memset(chip,  0, sizeof(Chip8)); 
-	memcpy(&chip->ram[0],    embedded_fontSmall,    16*5);
-	memcpy(&chip->ram[16*5], embedded_fontBig, 16*10);
-
-	chip->hires = 0;
-	chip->ip = 0x200;
-	chip->sp = 0;
 }
 
 #ifdef DEBUG
@@ -199,25 +210,35 @@ uint8_t chip8_doEvents(Chip8 *chip, int wait)
 			break;
 		case SDL_KEYUP:
 		case SDL_KEYDOWN:
+			switch(ev.key.keysym.sym)
+			{
 #ifdef DEBUG
-			if (ev.key.keysym.sym == SDLK_SPACE)
+			case SDLK_SPACE:
 				slow = (ev.type == SDL_KEYDOWN);
-
-			if ((ev.key.keysym.sym == SDLK_i) && (ev.type == SDL_KEYDOWN))
-			{
-				chip8_invokeDebug(chip);
-			}
+				break;
+			case SDLK_i:
+				if (ev.type == SDL_KEYDOWN)
+					chip8_invokeDebug(chip);
+				break;
 #endif
-
-			k = chip8_getKey(ev.key.keysym.sym);
-			
-			if (k<=0xF) //16 keys max, otherwise ignore
-			{
-				chip->key[k] = (ev.type == SDL_KEYDOWN);
-				
-				if (wait && (ev.type == SDL_KEYDOWN))
+			case SDLK_ESCAPE:
+				if (ev.type == SDL_KEYDOWN)
 				{
-					return k;
+					menu_invokeMenu();
+					chip->status = CHIP8_PAUSED;
+				}
+				break;
+			default:
+				k = chip8_getKey(ev.key.keysym.sym);
+
+				if (k<=0xF) //16 keys max, otherwise ignore
+				{
+					chip->key[k] = (ev.type == SDL_KEYDOWN);
+
+					if (wait && (ev.type == SDL_KEYDOWN))
+					{
+						return k;
+					}
 				}
 			}
 			break;
@@ -625,4 +646,43 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			break;
 		}
 	}
+}
+
+void chip8_doStep(Chip8 *chip)
+{
+	if (!((chip->ip >= 0x200) && (chip->ip < 0xFFF)))
+	{
+		chip->status = CHIP8_DEAD;
+		return;
+	}
+
+	chip8_doEvents(chip, 0);
+
+#ifdef DEBUG
+	uint16_t old_ip = chip->ip;
+#endif
+
+	//fetch instruction
+	uint16_t ins = (chip->ram[chip->ip+1]) | (chip->ram[chip->ip] << 8);
+
+	//Decode & Execute instruction
+	chip8_doInstruction(chip, ins);
+
+#ifdef DEBUG
+	int i;
+	for (i=0; i<chip->br_count; i++)
+	{
+		if (old_ip == chip->br_list[i])
+		{
+			printf("Reached breakpoint %i\n", i);
+			chip8_invokeDebug(chip);
+		}
+	}
+#endif
+
+	//walk instruction pointer
+	chip->ip += 2;
+
+	//Finish frame, deal with timers.
+	chip8_doTimers(chip);
 }

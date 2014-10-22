@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <string.h>
 #include <SDL.h>
 #include <SDL_image.h>
 
@@ -72,7 +73,50 @@ void font_deinit()
 	}
 }
 
-void font_renderText(int x, int y, const char *fmt, ...)
+static int font_getWidth(const char *text, const char *skips)
+{
+	int width = 0, i;
+
+	for (i=0; (text[i] != '\0')&&(i<1024); i++)
+	{
+		char c = text[i];
+		if (strchr(skips, c))
+			break;
+
+		switch(c)
+		{
+		case ' ':
+			width += 3;
+			break;
+		case '\t':
+			width += 6;
+			break;
+		default:
+			width += font->starts[c - '!' + 1] - font->starts[c - '!'] - 1;
+			break;
+		}
+	}
+
+	return width;
+}
+
+#define do_xpos_render(a) \
+	{\
+		switch(pos)\
+		{\
+		case FONT_CENTERED:\
+			_x = x - (font_getWidth(&text[(a)], "\n") / 2);\
+			break;\
+		case FONT_RIGHT:\
+			_x = x - font_getWidth(&text[(a)], "\n");\
+			break;\
+		case FONT_LEFT:\
+			_x = x;\
+			break;\
+		}\
+	}
+
+void font_renderText(int pos, int x, int y, const char *fmt, ...)
 {
 	char text[1024];
 	va_list args;
@@ -87,8 +131,9 @@ void font_renderText(int x, int y, const char *fmt, ...)
 	int src_pitch = (font->surface->pitch / vid_surface->format->BytesPerPixel);
 	int dst_pitch = (vid_surface->pitch / vid_surface->format->BytesPerPixel);
 
-	int _x = x, _y = y;
+	int _x = 0, _y = y;
 	char c;
+	do_xpos_render(0);
 
 	int cx, cw;
 
@@ -103,7 +148,7 @@ void font_renderText(int x, int y, const char *fmt, ...)
 			i = -2;
 			break;
 		case '\n':
-			_x = x;
+			do_xpos_render(i+1);
 			_y += font->surface->h;
 			break;
 		case '\t':

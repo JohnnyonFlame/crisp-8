@@ -38,12 +38,25 @@ typedef struct Chip8
 	//hi-res mode
 	uint8_t hires;
 
+	//status
+	uint8_t status;
+
+	//ROM FILENAME
+	char *rom;
+
 #ifdef DEBUG
 	//Breakpoints
 	uint16_t br_list[255];
 	uint16_t br_count;
 #endif
 } Chip8;
+
+enum
+{
+	CHIP8_DEAD = 0,
+	CHIP8_RUNNING,
+	CHIP8_PAUSED,
+};
 
 #define HI0_4(a) (((a) >> 12) & 0x000F)
 #define LO0_4(a) (((a) >> 8)  & 0x000F)
@@ -53,7 +66,5 @@ typedef struct Chip8
 #define LO_8(a)   ((a)		  & 0x00FF)
 
 #define RGB_TO_U32(r, g, b) (((r&0xFF) << 16) | ((g&0xFF) << 8) | (b&0xFF))
-
-uint8_t chip8_doEvents(Chip8 *chip, int wait);
 
 #endif //__SHARED_H__

@@ -7,6 +7,7 @@
 #include "font_embedded.h"
 #include "beeper.h"
 #include "video.h"
+#include "menu.h"
 
 #if defined(DEBUG)
 #define printf_debug(fmt, ...) printf("%04X@%04X: " fmt, ins, chip->ip, ##__VA_ARGS__)
@@ -16,6 +17,11 @@
 
 uint32_t vid_width  = 64;
 uint32_t vid_height = 32;
+static uint32_t time_d = 0, time_p = 0;
+
+#ifdef DEBUG
+static uint32_t slow = 0;
+#endif
 
 SDLKey key_binds[16] = 
 {
@@ -51,6 +57,12 @@ void chip8_zeroChip(Chip8 *chip)
 	chip->sp = 0;
 }
 
+//Stops sudden time jumps
+void chip8_zeroTimers()
+{
+	time_p = SDL_GetTicks();
+}
+
 int chip8_loadRom(Chip8 *chip, char *file)
 {
 	FILE *rom;
@@ -77,16 +89,13 @@ int chip8_loadRom(Chip8 *chip, char *file)
 	chip->rom = strdup(file);
 	chip->status = CHIP8_RUNNING;
 
+	chip8_zeroTimers();
+
 	return 1;
 }
 
-#ifdef DEBUG
-uint32_t slow = 0;
-#endif
-
 void chip8_doTimers(Chip8 *chip)
 {
-	static uint32_t time_d = 0, time_p = 0;
 	time_d += SDL_GetTicks() - time_p;
 	time_p  = SDL_GetTicks();
 	

@@ -5,6 +5,8 @@
 
 #include "shared.h"
 #include "config.h"
+#include "chip8.h"
+#include "beeper.h"
 #include "video.h"
 #include "font.h"
 
@@ -14,6 +16,12 @@ typedef struct Menu
 } Menu;
 
 static SDL_Surface *prev_screen = NULL;
+
+static void menu_invokeEmulation(Chip8 *chip)
+{
+	chip8_zeroTimers();
+	chip->status = CHIP8_RUNNING;
+}
 
 int  menu_doEvents(Chip8 *chip)
 {
@@ -31,7 +39,7 @@ int  menu_doEvents(Chip8 *chip)
 			{
 			case SDLK_ESCAPE:
 				if ((ev.type == SDL_KEYDOWN) && (chip->status == CHIP8_PAUSED))
-					chip->status = CHIP8_RUNNING;
+					menu_invokeEmulation(chip);
 				break;
 			default:
 				break;
@@ -47,6 +55,10 @@ int  menu_doEvents(Chip8 *chip)
 #define RGBA_LOWERBITS 0xFCFCFCFC
 void menu_invokeMenu()
 {
+	//We dont want endless annoying sounds, do we?
+	if (beeper_status == BEEPER_LOOPING)
+		beeper_endLoop();
+
 	//Cache screen
 	if (prev_screen)
 		SDL_FreeSurface(prev_screen);

@@ -25,7 +25,7 @@ void generic_buttonDraw(Chip8* chip, int index)
 {
 	int sel = (index == menu_current->selected);
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
-			"%s%s%s", (sel) ? "[": "", menu_current->entries[index].data, (sel) ? "]": "");
+			"%s%s%s", (sel) ? "[ ": "", menu_current->entries[index].data, (sel) ? " ]": "");
 }
 
 static void menu_selectNext(Menu *menu)
@@ -105,7 +105,7 @@ int  menu_doEvents(Chip8 *chip)
 	return 1;
 }
 
-#define RGBA_LOWERBITS 0xFCFCFCFC
+#define RGBA_LOWERBITS 0xF8F8F8F8
 void menu_invokeMenu()
 {
 	menu_current = &menu_mainMenu;
@@ -126,13 +126,13 @@ void menu_invokeMenu()
 	uint32_t *img = (uint32_t*)prev_screen->pixels;
 	int i, j;
 
-	//Dim the screen cache by a two factor.
+	//Dim the screen cache by a factor.
 	for (i=0; i<vid_surface->h; i++)
 	{
 		for (j=0; j<vid_surface->w; j++)
 		{
 			*img &= RGBA_LOWERBITS;
-			*img >>= 2;
+			*img >>= 3;
 			img++;
 		}
 		img += pitch;

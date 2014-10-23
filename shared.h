@@ -41,8 +41,9 @@ typedef struct Chip8
 	//status
 	uint8_t status;
 
-	//ROM FILENAME
+	//ROM DATA
 	char *rom;
+	uint32_t crc_hash;
 
 #ifdef DEBUG
 	//Breakpoints

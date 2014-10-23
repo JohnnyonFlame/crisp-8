@@ -29,28 +29,28 @@ void vid_generatePalette(uint32_t fg, uint32_t bg)
 	uint32_t i;
 	for (i=0; i<256; i++)
 	{
-			//Calculate the color cross-fading coefficients
-			fg_coef = ( i       << 16) / 0x0000FF00;
-			bg_coef = ((i^0xFF) << 16) / 0x0000FF00;
-			
-			/*
-				RGB Channels are calculated as
-						color = (fg * coef) + (bg * inverse_coef)
-				and then they are shifted and or'd, ignore the crazy bitshift
-				insanity. it's used to do 'proper' divisions without making use
-				of floating point math.
+		//Calculate the color cross-fading coefficients
+		fg_coef = ( i       << 16) / 0x0000FF00;
+		bg_coef = ((i^0xFF) << 16) / 0x0000FF00;
 
-				We store the fade coeffient [0-0xFF] on the alpha channel for
-				future fade passes.
-			*/
+		/*
+			RGB Channels are calculated as
+					color = (fg * coef) + (bg * inverse_coef)
+			and then they are shifted and or'd, ignore the crazy bitshift
+			insanity. it's used to do 'proper' divisions without making use
+			of floating point math.
 
-			vid_palette[i] = 
-				   (((fg_coef * fg_r)  & 0x00FF0000)
-				+  (((bg_coef * bg_r)  & 0x00FF0000)))
-				| ((((fg_coef * fg_g) >> 16) << 8)
-				+  (((bg_coef * bg_g) >> 16) << 8))
-				| ((((fg_coef * fg_b) >> 16))
-				+  (((bg_coef * bg_b) >> 16)));
+			We store the fade coeffient [0-0xFF] on the alpha channel for
+			future fade passes.
+		*/
+
+		vid_palette[i] =
+			   (((fg_coef * fg_r)  & 0x00FF0000)
+			+  (((bg_coef * bg_r)  & 0x00FF0000)))
+			| ((((fg_coef * fg_g) >> 16) << 8)
+			+  (((bg_coef * bg_g) >> 16) << 8))
+			| ((((fg_coef * fg_b) >> 16))
+			+  (((bg_coef * bg_b) >> 16)));
 	}
 }
 
@@ -121,19 +121,26 @@ static void vid_flipSurface_stretch(Chip8 *chip)
 			acc_x += coef_x;
 			t_x = acc_x / FIX8_ONE;
 
-			//Find the first pixel of the rect
-			alpha = vid_fadeBuffer[(i*vid_width) + j];
+			if (vid_phosphor)
+			{
+				//Find the first pixel of the rect
+				alpha = vid_fadeBuffer[(i*vid_width) + j];
 
-			if (chip->vram[(i*vid_width) + j])
-				alpha = (alpha + vid_phosphor_add < 255)
-						? alpha + vid_phosphor_add
-						: 255;
+				if (chip->vram[(i*vid_width) + j])
+					alpha = (alpha + vid_phosphor_add < 255)
+							? alpha + vid_phosphor_add
+							: 255;
+				else
+					alpha = (alpha < vid_phosphor_sub)
+							? 0
+							: alpha - vid_phosphor_sub;
+
+				vid_fadeBuffer[(i*vid_width) + j] = alpha;
+			}
 			else
-				alpha = (alpha < vid_phosphor_sub)
-						? 0
-						: alpha - vid_phosphor_sub;
-
-			vid_fadeBuffer[(i*vid_width) + j] = alpha;
+			{
+				alpha = (chip->vram[(i*vid_width) + j]) ? 255: 0;
+			}
 
 			vid_fillRect(scr, vid_palette[alpha], pitch1 - scale_w - t_x, scale_w + t_x, scale_h + t_y);
 
@@ -163,18 +170,26 @@ static void vid_flipSurface_original(Chip8 *chip)
 		for (j=0; j<vid_width; j++)
 		{
 			//Find the first pixel of the rect
-			alpha = vid_fadeBuffer[(i*vid_width) + j];
-			
-			if (chip->vram[(i*vid_width) + j])
-				alpha = (alpha + vid_phosphor_add < 255)
-						? alpha + vid_phosphor_add
-						: 255;
-			else
-				alpha = (alpha < vid_phosphor_sub)
-						? 0
-						: alpha - vid_phosphor_sub;
+			if (vid_phosphor)
+			{
+				//Find the first pixel of the rect
+				alpha = vid_fadeBuffer[(i*vid_width) + j];
 
-			vid_fadeBuffer[(i*vid_width) + j] = alpha;
+				if (chip->vram[(i*vid_width) + j])
+					alpha = (alpha + vid_phosphor_add < 255)
+							? alpha + vid_phosphor_add
+							: 255;
+				else
+					alpha = (alpha < vid_phosphor_sub)
+							? 0
+							: alpha - vid_phosphor_sub;
+
+				vid_fadeBuffer[(i*vid_width) + j] = alpha;
+			}
+			else
+			{
+				alpha = (chip->vram[(i*vid_width) + j]) ? 255 : 0;
+			}
 			
 			*scr++ = vid_palette[alpha];
 		}

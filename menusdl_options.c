@@ -12,6 +12,7 @@
 #include "menu_sdl.h"
 
 static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index);
+static void optionsMenu_hashDraw(Chip8 *chip, int index);
 static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index);
 static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index);
 
@@ -22,6 +23,11 @@ Menu menu_optionsMenu = {
 			NULL,
 			generic_labelDraw,
 			"Crisp-8 Options",
+		},
+		{
+			NULL,
+			optionsMenu_hashDraw,
+			NULL,
 		},
 		{
 			NULL,
@@ -40,8 +46,13 @@ Menu menu_optionsMenu = {
 		}
 
 	},
-	.selected = 2
+	.selected = 3
 };
+
+static void optionsMenu_hashDraw(Chip8 *chip, int index)
+{
+	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index, "(ROM ID: %08X)", chip->crc_hash);
+}
 
 static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index)
 {

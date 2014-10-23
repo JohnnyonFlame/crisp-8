@@ -52,6 +52,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	config_loadGlobal();
 	if (!vid_init())
 		return -1;
 

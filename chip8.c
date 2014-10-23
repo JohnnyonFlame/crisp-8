@@ -8,6 +8,7 @@
 #include "beeper.h"
 #include "video.h"
 #include "menu.h"
+#include "crc32.h"
 
 #if defined(DEBUG)
 #define printf_debug(fmt, ...) printf("%04X@%04X: " fmt, ins, chip->ip, ##__VA_ARGS__)
@@ -87,6 +88,8 @@ int chip8_loadRom(Chip8 *chip, char *file)
 	fread(&chip->ram[0] + 0x200, 1, 0xFFF - 0x200, rom);
 	fclose(rom);
 	
+	chip->crc_hash = crc32(0xDEADBEEF, &chip->ram[0] + 0x200, 0xFFF - 0x200);
+
 	if (((chip->ram[0x200] << 8) | chip->ram[0x201]) == 0x1260)
 	{
 		vid_height = 64;

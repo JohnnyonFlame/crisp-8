@@ -31,7 +31,7 @@ void generic_buttonDraw(Chip8* chip, int index)
 static void menu_selectNext(Menu *menu)
 {
 	int i = menu->selected;
-	while(menu->entries[i+1].callback_Draw && menu->entries[i+1].callback_Ev)
+	while(menu->entries[i+1].callback_Draw || menu->entries[i+1].callback_Ev)
 	{
 		i++;
 
@@ -47,7 +47,7 @@ static void menu_selectNext(Menu *menu)
 static void menu_selectPrevious(Menu *menu)
 {
 	int i = menu->selected;
-	while((i > 0) && menu->entries[i-1].callback_Draw && menu->entries[i-1].callback_Ev)
+	while((i > 0) && (menu->entries[i-1].callback_Draw || menu->entries[i-1].callback_Ev))
 	{
 		i--;
 

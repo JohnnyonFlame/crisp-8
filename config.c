@@ -310,6 +310,7 @@ void config_saveGlobal(Config *cfg)
 		return;
 	}
 
+	char *c;
 	int i;
 	for (i=0; settings[i].name != NULL; i++)
 	{
@@ -322,7 +323,12 @@ void config_saveGlobal(Config *cfg)
 			fprintf(f, "%s = %i\n", settings[i].name, *((int*)fromoffset(settings[i].data, cfg)));
 			break;
 		case SETTINGS_STRING:
-			fprintf(f, "%s = \"%S\"\n", settings[i].name, (char*)fromoffset(settings[i].data, cfg));
+			for (c = (char*)fromoffset(settings[i].data, cfg); *c!='\0'; c++)
+			{
+				if (*c=='"')
+					fputc('\\', f);
+				fputc(*c, f);
+			}
 			break;
 		}
 	}
@@ -349,22 +355,38 @@ void config_saveGame(Chip8* chip, Config *cfg)
 	if (!config_loadGlobal(&global))
 		return;
 
+	char *c;
 	int i, current_int, global_int;
 	for (i=0; settings[i].name != NULL; i++)
 	{
 		switch(settings[i].type)
 		{
+		case SETTINGS_INT_HEX:
 		case SETTINGS_INT:
 			current_int = *((int*)fromoffset(settings[i].data, cfg));
 			global_int  = *((int*)fromoffset(settings[i].data, &global));
 
 			if (current_int != global_int)
-				fprintf(f, "%s = %i\n", settings[i].name, current_int);
+			{
+				if (settings[i].type == SETTINGS_INT)
+					fprintf(f, "%s = %i\n", settings[i].name, current_int);
+				else
+					fprintf(f, "%s = 0x%08X\n", settings[i].name, *((int*)fromoffset(settings[i].data, cfg)));
+			}
+
 			break;
 		case SETTINGS_STRING:
 			if (strcmp((char*)fromoffset(settings[i].data, cfg),
 					(char*)fromoffset(settings[i].data, &global)))
-				fprintf(f, "%s = \"%S\"\n", settings[i].name, (char*)fromoffset(settings[i].data, cfg));
+			{
+				for (c = (char*)fromoffset(settings[i].data, cfg); *c!='\0'; c++)
+				{
+					if (*c=='"')
+						fputc('\\', f);
+
+					fputc(*c, f);
+				}
+			}
 			break;
 		}
 	}

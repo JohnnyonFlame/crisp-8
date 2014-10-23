@@ -83,7 +83,7 @@ static void vid_flipSurface_stretch(Chip8 *chip)
 	scale_w = (vid_surface->w << 8) / vid_width;
 	scale_h = (vid_surface->h << 8) / vid_height;
 
-	if (vid_stretch & VID_STRETCH_ASPECT)
+	if (config.stretch & VID_STRETCH_ASPECT)
 	{
 		if (scale_w > scale_h)
 			scale_w = scale_h;
@@ -91,7 +91,7 @@ static void vid_flipSurface_stretch(Chip8 *chip)
 			scale_h = scale_w;
 	}
 
-	if (vid_stretch & VID_STRETCH_INTEGER)
+	if (config.stretch & VID_STRETCH_INTEGER)
 	{
 		scale_w &= 0xFFFFFF00;
 		scale_h &= 0xFFFFFF00;
@@ -121,19 +121,19 @@ static void vid_flipSurface_stretch(Chip8 *chip)
 			acc_x += coef_x;
 			t_x = acc_x / FIX8_ONE;
 
-			if (vid_phosphor)
+			if (config.phosphor)
 			{
 				//Find the first pixel of the rect
 				alpha = vid_fadeBuffer[(i*vid_width) + j];
 
 				if (chip->vram[(i*vid_width) + j])
-					alpha = (alpha + vid_phosphor_add < 255)
-							? alpha + vid_phosphor_add
+					alpha = (alpha + config.phosphor_add < 255)
+							? alpha + config.phosphor_add
 							: 255;
 				else
-					alpha = (alpha < vid_phosphor_sub)
+					alpha = (alpha < config.phosphor_sub)
 							? 0
-							: alpha - vid_phosphor_sub;
+							: alpha - config.phosphor_sub;
 
 				vid_fadeBuffer[(i*vid_width) + j] = alpha;
 			}
@@ -170,19 +170,19 @@ static void vid_flipSurface_original(Chip8 *chip)
 		for (j=0; j<vid_width; j++)
 		{
 			//Find the first pixel of the rect
-			if (vid_phosphor)
+			if (config.phosphor)
 			{
 				//Find the first pixel of the rect
 				alpha = vid_fadeBuffer[(i*vid_width) + j];
 
 				if (chip->vram[(i*vid_width) + j])
-					alpha = (alpha + vid_phosphor_add < 255)
-							? alpha + vid_phosphor_add
+					alpha = (alpha + config.phosphor_add < 255)
+							? alpha + config.phosphor_add
 							: 255;
 				else
-					alpha = (alpha < vid_phosphor_sub)
+					alpha = (alpha < config.phosphor_sub)
 							? 0
-							: alpha - vid_phosphor_sub;
+							: alpha - config.phosphor_sub;
 
 				vid_fadeBuffer[(i*vid_width) + j] = alpha;
 			}
@@ -218,7 +218,7 @@ int vid_init()
 		return 0;
 	}
 	
-	vid_generatePalette(vid_fgColors, vid_bgColors);
+	vid_generatePalette(config.fgColor, config.bgColor);
 	vid_clearFadeBuffer();
 	
 	if (font_init() == -1)
@@ -243,9 +243,9 @@ void vid_updateSize(uint32_t w, uint32_t h)
 
 void vid_flipSurface(Chip8 *chip)
 {
-	SDL_FillRect(vid_surface, 0, vid_bgColors);
+	SDL_FillRect(vid_surface, 0, config.bgColor);
 
-	if (vid_stretch & VID_STRETCH)
+	if (config.stretch & VID_STRETCH)
 		vid_flipSurface_stretch(chip);
 	else
 		vid_flipSurface_original(chip);

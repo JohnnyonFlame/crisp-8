@@ -100,7 +100,7 @@ static void optionsMenu_phosphorFadeInDraw(Chip8* chip, int index)
 	int sel = (index == menu_current->selected);
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sPhosphor Fade In: %03i%s", (sel) ? "[ " : "",
-			vid_phosphor_add,
+			config.phosphor_add,
 			(sel) ? " ]" : "");
 }
 
@@ -110,9 +110,9 @@ static void optionsMenu_phosphorFadeInEv(Chip8* chip, SDL_Event *ev, int index)
 	if (ev->type == SDL_KEYDOWN)
 	{
 		if (ev->key.keysym.sym == SDLK_LEFT)
-			vid_phosphor_add = (vid_phosphor_add < mod) ? 0 : vid_phosphor_add - mod;
+			config.phosphor_add = (config.phosphor_add < mod) ? 0 : config.phosphor_add - mod;
 		else if (ev->key.keysym.sym == SDLK_RIGHT)
-			vid_phosphor_add = (vid_phosphor_add + mod > 255) ? 255 : vid_phosphor_add + mod;
+			config.phosphor_add = (config.phosphor_add + mod > 255) ? 255 : config.phosphor_add + mod;
 	}
 }
 
@@ -121,7 +121,7 @@ static void optionsMenu_phosphorFadeOutDraw(Chip8* chip, int index)
 	int sel = (index == menu_current->selected);
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sPhosphor Fade Out: %03i%s", (sel) ? "[ " : "",
-			vid_phosphor_sub,
+			config.phosphor_sub,
 			(sel) ? " ]" : "");
 }
 
@@ -131,9 +131,9 @@ static void optionsMenu_phosphorFadeOutEv(Chip8* chip, SDL_Event *ev, int index)
 	if (ev->type == SDL_KEYDOWN)
 	{
 		if (ev->key.keysym.sym == SDLK_LEFT)
-			vid_phosphor_sub = (vid_phosphor_sub < mod) ? 0 : vid_phosphor_sub - mod;
+			config.phosphor_sub = (config.phosphor_sub < mod) ? 0 : config.phosphor_sub - mod;
 		else if (ev->key.keysym.sym == SDLK_RIGHT)
-			vid_phosphor_sub = (vid_phosphor_sub + mod > 255) ? 255 : vid_phosphor_sub + mod;
+			config.phosphor_sub = (config.phosphor_sub + mod > 255) ? 255 : config.phosphor_sub + mod;
 	}
 }
 
@@ -145,7 +145,7 @@ static void optionsMenu_hashDraw(Chip8 *chip, int index)
 static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index)
 {
 	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		vid_phosphor = !vid_phosphor;
+		config.phosphor = !config.phosphor;
 }
 
 static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index)
@@ -153,7 +153,7 @@ static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index)
 	int sel = (index == menu_current->selected);
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sPhosphor Effect: %s%s", (sel) ? "[ " : "",
-			(vid_phosphor) ? "On" : "Off",
+			(config.phosphor) ? "On" : "Off",
 			(sel) ? " ]" : "");
 }
 
@@ -162,10 +162,10 @@ static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index)
 	int sel = (index == menu_current->selected);
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sAspect: %s%s%s", (sel) ? "[ " : "",
-			(vid_stretch & VID_STRETCH)
-			? (vid_stretch & VID_STRETCH_ASPECT) ? "Aspect" : "Full"
+			(config.stretch & VID_STRETCH)
+			? (config.stretch & VID_STRETCH_ASPECT) ? "Aspect" : "Full"
 			: "Off",
-			(vid_stretch & VID_STRETCH_INTEGER) ? " & Integer" : "",
+			(config.stretch & VID_STRETCH_INTEGER) ? " & Integer" : "",
 			(sel) ? " ]" : "");
 }
 
@@ -173,16 +173,16 @@ static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index)
 {
 	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
 	{
-		if (vid_stretch == (VID_STRETCH | VID_STRETCH_INTEGER))
-			vid_stretch = 0;
+		if (config.stretch == (VID_STRETCH | VID_STRETCH_INTEGER))
+			config.stretch = 0;
 		else
 		{
-			if (!vid_stretch)
-				vid_stretch = VID_STRETCH | VID_STRETCH_ASPECT;
-			else if (vid_stretch & VID_STRETCH_INTEGER)
-				vid_stretch ^= VID_STRETCH_INTEGER | VID_STRETCH_ASPECT;
+			if (!config.stretch)
+				config.stretch = VID_STRETCH | VID_STRETCH_ASPECT;
+			else if (config.stretch & VID_STRETCH_INTEGER)
+				config.stretch ^= VID_STRETCH_INTEGER | VID_STRETCH_ASPECT;
 			else
-				vid_stretch ^= VID_STRETCH_INTEGER;
+				config.stretch ^= VID_STRETCH_INTEGER;
 		}
 	}
 

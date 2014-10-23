@@ -30,7 +30,7 @@ uint8_t chip8_getKey(SDLKey key)
 	int i;
 	for (i=0; i<16; i++)
 	{
-		if (key_binds[i] == key)
+		if (config.key_binds[i] == key)
 			return i;
 	}
 	

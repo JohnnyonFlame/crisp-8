@@ -177,7 +177,7 @@ void font_renderText(int pos, int x, int y, const char *fmt, ...)
 						continue;
 
 					if ((*(src + (src_pitch * j) + k + cx) & 0x00FFFFFF) == FONT_MASK)
-						*(dst + (dst_pitch * (j + _y)) + k + _x) = vid_fgColors;
+						*(dst + (dst_pitch * (j + _y)) + k + _x) = config.fgColor;
 				}
 			}
 

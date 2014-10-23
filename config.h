@@ -7,13 +7,14 @@ enum {
 	VID_STRETCH_INTEGER = 1 << 2,
 };
 
-extern uint32_t vid_fgColors;
-extern uint32_t vid_bgColors;
-extern uint32_t vid_stretch;
-extern int 	 	vid_phosphor;
-extern int      vid_phosphor_add;
-extern int		vid_phosphor_sub;
-extern int  	key_binds[16];
+typedef struct Config {
+	int fgColor, bgColor;
+	int stretch;
+	int phosphor, phosphor_add, phosphor_sub;
+	int key_binds[16];
+} Config;
+
+extern Config config;
 
 void config_loadGlobal();
 

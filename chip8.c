@@ -4,6 +4,7 @@
 
 #include "shared.h"
 #include "chip8.h"
+#include "config.h"
 #include "font_embedded.h"
 #include "beeper.h"
 #include "video.h"
@@ -23,12 +24,6 @@ static uint32_t time_d = 0, time_p = 0;
 #ifdef DEBUG
 static uint32_t slow = 0;
 #endif
-
-SDLKey key_binds[16] = 
-{
-	SDLK_x, SDLK_1, SDLK_2, SDLK_3, SDLK_q, SDLK_w, SDLK_e, SDLK_a, 
-	SDLK_s, SDLK_d, SDLK_z, SDLK_c, SDLK_4, SDLK_r, SDLK_f, SDLK_v
-};
 
 uint8_t chip8_getKey(SDLKey key)
 {

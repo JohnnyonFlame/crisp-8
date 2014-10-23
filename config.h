@@ -13,6 +13,7 @@ extern uint32_t vid_stretch;
 extern int 	 	vid_phosphor;
 extern int      vid_phosphor_add;
 extern int		vid_phosphor_sub;
+extern int  	key_binds[16];
 
 void config_loadGlobal();
 

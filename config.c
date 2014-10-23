@@ -4,6 +4,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include <SDL/SDL.h>
+
 #include "shared.h"
 #include "config.h"
 #include "token.h"
@@ -18,6 +20,12 @@ uint32_t vid_stretch      = VID_STRETCH | VID_STRETCH_ASPECT | VID_STRETCH_INTEG
 int 	 vid_phosphor     = 1;
 int      vid_phosphor_add = 160;
 int		 vid_phosphor_sub = 24;
+
+int key_binds[16] =
+{
+	SDLK_x, SDLK_1, SDLK_2, SDLK_3, SDLK_q, SDLK_w, SDLK_e, SDLK_a,
+	SDLK_s, SDLK_d, SDLK_z, SDLK_c, SDLK_4, SDLK_r, SDLK_f, SDLK_v
+};
 
 enum {
 	SETTINGS_INT,
@@ -61,6 +69,86 @@ Settings settings[] = {
 		"vid_phosphor_sub",
 		SETTINGS_INT,
 		&vid_phosphor_sub
+	},
+	{
+		"key_binds.0",
+		SETTINGS_INT,
+		&key_binds[0],
+	},
+	{
+		"key_binds.1",
+		SETTINGS_INT,
+		&key_binds[1],
+	},
+	{
+		"key_binds.2",
+		SETTINGS_INT,
+		&key_binds[2],
+	},
+	{
+		"key_binds.3",
+		SETTINGS_INT,
+		&key_binds[3],
+	},
+	{
+		"key_binds.4",
+		SETTINGS_INT,
+		&key_binds[4],
+	},
+	{
+		"key_binds.5",
+		SETTINGS_INT,
+		&key_binds[5],
+	},
+	{
+		"key_binds.6",
+		SETTINGS_INT,
+		&key_binds[6],
+	},
+	{
+		"key_binds.7",
+		SETTINGS_INT,
+		&key_binds[7],
+	},
+	{
+		"key_binds.8",
+		SETTINGS_INT,
+		&key_binds[8],
+	},
+	{
+		"key_binds.9",
+		SETTINGS_INT,
+		&key_binds[9],
+	},
+	{
+		"key_binds.A",
+		SETTINGS_INT,
+		&key_binds[10],
+	},
+	{
+		"key_binds.B",
+		SETTINGS_INT,
+		&key_binds[11],
+	},
+	{
+		"key_binds.C",
+		SETTINGS_INT,
+		&key_binds[12],
+	},
+	{
+		"key_binds.D",
+		SETTINGS_INT,
+		&key_binds[13],
+	},
+	{
+		"key_binds.E",
+		SETTINGS_INT,
+		&key_binds[14],
+	},
+	{
+		"key_binds.F",
+		SETTINGS_INT,
+		&key_binds[15],
 	},
 	{NULL, 0, NULL}
 };

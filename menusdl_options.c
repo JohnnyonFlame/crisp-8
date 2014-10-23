@@ -13,6 +13,8 @@
 
 static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index);
 static void optionsMenu_hashDraw(Chip8 *chip, int index);
+static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index);
+static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index);
 static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index);
 static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index);
 
@@ -40,6 +42,26 @@ Menu menu_optionsMenu = {
 			NULL
 		},
 		{
+			optionsMenu_phosphorSelectEv,
+			optionsMenu_phosphorSelectDraw,
+			NULL
+		},
+		{
+			NULL,
+			generic_labelDraw,
+			"Phosphor Effect Settings",
+		},
+		{
+			NULL,
+			generic_labelDraw,
+			"Foreground Color",
+		},
+		{
+			NULL,
+			generic_labelDraw,
+			"Background Colour",
+		},
+		{
 			optionsMenu_backEv,
 			generic_buttonDraw,
 			"Back"
@@ -52,6 +74,21 @@ Menu menu_optionsMenu = {
 static void optionsMenu_hashDraw(Chip8 *chip, int index)
 {
 	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index, "(ROM ID: %08X)", chip->crc_hash);
+}
+
+static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		vid_phosphor = !vid_phosphor;
+}
+
+static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index)
+{
+	int sel = (index == menu_current->selected);
+	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+			"%sPhosphor Effect: %s%s", (sel) ? "[ " : "",
+			(vid_phosphor) ? "On" : "Off",
+			(sel) ? " ]" : "");
 }
 
 static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index)

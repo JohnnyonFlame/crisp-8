@@ -16,6 +16,9 @@ typedef struct Config {
 
 extern Config config;
 
-void config_loadGlobal();
+int  config_loadGlobal(Config *cfg);
+void config_loadGame(Chip8 *chip, Config *cfg);
+void config_saveGlobal(Config *cfg);
+void config_saveGame(Chip8* chip, Config *cfg);
 
 #endif //__CONFIG_H__

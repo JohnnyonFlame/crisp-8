@@ -12,6 +12,8 @@
 #include "menu_sdl.h"
 
 static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index);
+static void optionsMenu_saveGlobalEv(Chip8* chip, SDL_Event *ev, int index);
+static void optionsMenu_saveGameEv(Chip8* chip, SDL_Event *ev, int index);
 static void optionsMenu_phosphorFadeInDraw(Chip8* chip, int index);
 static void optionsMenu_phosphorFadeInEv(Chip8* chip, SDL_Event *ev, int index);
 static void optionsMenu_phosphorFadeOutDraw(Chip8* chip, int index);
@@ -76,14 +78,14 @@ Menu menu_optionsMenu = {
 			"",
 		},
 		{
-			NULL,
-			generic_labelDraw,
+			optionsMenu_saveGlobalEv,
+			generic_buttonDraw,
 			"Save to Global Settings",
 		},
 		{
-			NULL,
-			generic_labelDraw,
-			"Save to Rom Settings",
+			optionsMenu_saveGameEv,
+			generic_buttonDraw,
+			"Save to Game Settings",
 		},
 		{
 			optionsMenu_backEv,
@@ -94,6 +96,18 @@ Menu menu_optionsMenu = {
 	},
 	.selected = 3
 };
+
+static void optionsMenu_saveGlobalEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		config_saveGlobal(&config);
+}
+
+static void optionsMenu_saveGameEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		config_saveGame(chip, &config);
+}
 
 static void optionsMenu_phosphorFadeInDraw(Chip8* chip, int index)
 {

@@ -83,7 +83,9 @@ int chip8_loadRom(Chip8 *chip, char *file)
 	fread(&chip->ram[0] + 0x200, 1, 0xFFF - 0x200, rom);
 	fclose(rom);
 	
+	//Calculate CRC32 rom lookup ID, load appropriate game settings
 	chip->crc_hash = crc32(0xDEADBEEF, &chip->ram[0] + 0x200, 0xFFF - 0x200);
+	config_loadGame(chip, &config);
 
 	if (((chip->ram[0x200] << 8) | chip->ram[0x201]) == 0x1260)
 	{
@@ -107,7 +109,7 @@ int chip8_loadRom(Chip8 *chip, char *file)
 	chip->status = CHIP8_RUNNING;
 
 	chip8_zeroTimers();
-	vid_updateSize(vid_width, vid_height);
+	vid_updateScreen();
 
 	return 1;
 }
@@ -421,7 +423,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			chip8_clearScreen(chip);
 			vid_width  = 64;
 			vid_height = 32;
-			vid_updateSize(64, 32);
+			vid_updateScreen();
 			
 			chip->hires = 0;
 			break;
@@ -430,7 +432,7 @@ void chip8_doInstruction(Chip8 *chip, uint16_t ins)
 			chip8_clearScreen(chip);
 			vid_width  = 128;
 			vid_height = 64;
-			vid_updateSize(128, 64);
+			vid_updateScreen();
 			
 			chip->hires = 1;
 			break;

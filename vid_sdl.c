@@ -233,10 +233,11 @@ void vid_deinit()
 	SDL_Quit();
 }
 
-void vid_updateSize(uint32_t w, uint32_t h)
+void vid_updateScreen()
 {
 	vid_clearFadeBuffer();
-	//TODO:: Update screen size
+	vid_generatePalette(config.fgColor, config.bgColor);
+	//TODO:: May change resolution on GCW-Zero?
 }
 
 

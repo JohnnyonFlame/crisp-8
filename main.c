@@ -52,11 +52,11 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	config_loadGlobal();
 	if (!vid_init())
 		return -1;
 
 	beeper_init();
+	config_loadGlobal(&config);
 
 	Chip8* chip = (Chip8*)calloc(1, sizeof(Chip8));
 	if (chip8_loadRom(chip, argv[1]) == -1)

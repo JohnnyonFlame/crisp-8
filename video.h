@@ -3,7 +3,7 @@
 
 int vid_init();
 void vid_deinit();
-void vid_updateSize(uint32_t w, uint32_t h);
+void vid_updateScreen();
 void vid_flipSurface(Chip8 *chip);
 
 extern SDL_Surface *vid_surface;

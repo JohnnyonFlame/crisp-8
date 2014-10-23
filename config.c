@@ -27,6 +27,7 @@ Config config =
 
 enum {
 	SETTINGS_INT,
+	SETTINGS_INT_HEX,
 	SETTINGS_STRING,
 };
 
@@ -43,12 +44,12 @@ typedef struct Settings
 Settings settings[] = {
 	{
 		"fg_color",
-		SETTINGS_INT,
+		SETTINGS_INT_HEX,
 		offc(fgColor),
 	},
 	{
 		"bg_color",
-		SETTINGS_INT,
+		SETTINGS_INT_HEX,
 		offc(bgColor),
 	},
 	{
@@ -192,6 +193,7 @@ static int config_doSettings(Config *cfg, FILE *file, int opt)
 		{
 			switch(settings[opt].type)
 			{
+			case SETTINGS_INT_HEX:
 			case SETTINGS_INT:
 				if (!sscanf(value.str, "0x%x", (int*)fromoffset(settings[opt].data, cfg)))
 					if (!sscanf(value.str, "%i", (int*)fromoffset(settings[opt].data, cfg)))
@@ -248,7 +250,7 @@ void config_parseFile(Config *cfg, FILE *file)
 	}
 }
 
-void config_loadGlobal()
+int config_loadGlobal(Config *cfg)
 {
 	FILE *f = NULL;
 #ifdef WINDOWS
@@ -267,8 +269,105 @@ void config_loadGlobal()
 	if (!f)
 	{
 		printf("Warning, unable to open global.cfg!\n");
+		return -1;
+	}
+
+	config_parseFile(cfg, f);
+	fclose(f);
+	return 1;
+}
+
+void config_loadGame(Chip8 *chip, Config *cfg)
+{
+	FILE *f = NULL;
+	char filename[256];
+#ifdef WINDOWS
+	snprintf(filename, 256, "%08X.cfg", chip->crc_hash);
+#else
+	snprintf(filename, 256, "%s/.crisp8/%08X.cfg", getenv("HOME"), chip->crc_hash);
+#endif
+
+	if (!(f = fopen(filename, "r")))
+		return;
+
+	config_parseFile(cfg, f);
+	fclose(f);
+}
+
+void config_saveGlobal(Config *cfg)
+{
+	FILE *f = NULL;
+	char filename[256];
+#ifdef WINDOWS
+	snprintf(filename, 256, "global.cfg");
+#else
+	snprintf(filename, 256, "%s/.crisp8/global.cfg", getenv("HOME"));
+#endif
+
+	if (!(f = fopen(filename, "w+")))
+	{
+		printf("Error, Unable to open file %s!", filename);
 		return;
 	}
 
-	config_parseFile(&config, f);
+	int i;
+	for (i=0; settings[i].name != NULL; i++)
+	{
+		switch(settings[i].type)
+		{
+		case SETTINGS_INT_HEX:
+			fprintf(f, "%s = 0x%08X\n", settings[i].name, *((int*)fromoffset(settings[i].data, cfg)));
+			break;
+		case SETTINGS_INT:
+			fprintf(f, "%s = %i\n", settings[i].name, *((int*)fromoffset(settings[i].data, cfg)));
+			break;
+		case SETTINGS_STRING:
+			fprintf(f, "%s = \"%S\"\n", settings[i].name, (char*)fromoffset(settings[i].data, cfg));
+			break;
+		}
+	}
+
+	fclose(f);
+}
+
+void config_saveGame(Chip8* chip, Config *cfg)
+{
+	Config global;
+	FILE *f = NULL;
+	char filename[256];
+#ifdef WINDOWS
+	snprintf(filename, 256, "%08X.cfg", chip->crc_hash);
+#else
+	snprintf(filename, 256, "%s/.crisp8/%08X.cfg", getenv("HOME"), chip->crc_hash);
+#endif
+	if (!(f = fopen(filename, "w+")))
+	{
+		printf("Error, Unable to open file %s!", filename);
+		return;
+	}
+
+	if (!config_loadGlobal(&global))
+		return;
+
+	int i, current_int, global_int;
+	for (i=0; settings[i].name != NULL; i++)
+	{
+		switch(settings[i].type)
+		{
+		case SETTINGS_INT:
+			current_int = *((int*)fromoffset(settings[i].data, cfg));
+			global_int  = *((int*)fromoffset(settings[i].data, &global));
+
+			if (current_int != global_int)
+				fprintf(f, "%s = %i\n", settings[i].name, current_int);
+			break;
+		case SETTINGS_STRING:
+			if (strcmp((char*)fromoffset(settings[i].data, cfg),
+					(char*)fromoffset(settings[i].data, &global)))
+				fprintf(f, "%s = \"%S\"\n", settings[i].name, (char*)fromoffset(settings[i].data, cfg));
+			break;
+		}
+	}
+
+	fclose(f);
 }

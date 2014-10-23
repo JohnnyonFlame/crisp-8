@@ -102,10 +102,9 @@ static int config_doSettings(FILE *file, int opt)
 			switch(settings[opt].type)
 			{
 			case SETTINGS_INT:
-				if (!sscanf(value.str, "%i", (int*)settings[opt].data))
-					if (!sscanf(value.str, "%x", (int*)settings[opt].data))
-						if (!sscanf(value.str, "0x%x", (int*)settings[opt].data))
-							printf("Warning, unable to parse value for %s!\n", settings[opt].name);
+				if (!sscanf(value.str, "0x%x", (int*)settings[opt].data))
+					if (!sscanf(value.str, "%i", (int*)settings[opt].data))
+						printf("Warning, unable to parse value for %s!\n", settings[opt].name);
 
 				break;
 			case SETTINGS_STRING:

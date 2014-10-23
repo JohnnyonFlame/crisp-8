@@ -258,7 +258,7 @@ void config_loadGlobal()
 
 	//Create folder if it doesn't exist yet.
 	snprintf(filename, 256, "%s/.crisp8", getenv("HOME"));
-	mkdir(home_folder, S_IRWXU);
+	mkdir(filename, S_IRWXU);
 
 	snprintf(filename, 256, "%s/.crisp8/global.cfg", getenv("HOME"));
 	f = fopen(filename, "r");

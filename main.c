@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 		chip->status = CHIP8_EXIT;
 		//TODO:: Create helper_sdl.c
 		SDL_FillRect(vid_surface, 0, config.bgColor);
-		font_renderText(FONT_CENTERED, vid_surface->w/2, 0, "Unable to open %s!\nPlease check if file exists.", argv[1]);
+		font_renderText(RGB_TO_U32(255, 0, 0), FONT_CENTERED, vid_surface->w/2, 0, "Unable to open %s!\nPlease check if file exists.", argv[1]);
 		SDL_Flip(vid_surface);
 		SDL_Delay(3000);
 	}

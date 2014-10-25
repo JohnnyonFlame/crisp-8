@@ -11,7 +11,7 @@ typedef struct {
 
 int font_init();
 void font_deinit();
-void font_renderText(int pos, int x, int y, const char *fmt, ...);
+void font_renderText(uint32_t col, int pos, int x, int y, const char *fmt, ...);
 
 enum
 {

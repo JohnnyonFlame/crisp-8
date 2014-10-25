@@ -112,7 +112,7 @@ static void optionsMenu_saveGameEv(Chip8* chip, SDL_Event *ev, int index)
 static void optionsMenu_phosphorFadeInDraw(Chip8* chip, int index)
 {
 	int sel = (index == menu_current->selected);
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sPhosphor Fade In: %03i%s", (sel) ? "[ " : "",
 			config.phosphor_add,
 			(sel) ? " ]" : "");
@@ -133,7 +133,7 @@ static void optionsMenu_phosphorFadeInEv(Chip8* chip, SDL_Event *ev, int index)
 static void optionsMenu_phosphorFadeOutDraw(Chip8* chip, int index)
 {
 	int sel = (index == menu_current->selected);
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sPhosphor Fade Out: %03i%s", (sel) ? "[ " : "",
 			config.phosphor_sub,
 			(sel) ? " ]" : "");
@@ -153,7 +153,7 @@ static void optionsMenu_phosphorFadeOutEv(Chip8* chip, SDL_Event *ev, int index)
 
 static void optionsMenu_hashDraw(Chip8 *chip, int index)
 {
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index, "(ROM ID: %08X)", chip->crc_hash);
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index, "(ROM ID: %08X)", chip->crc_hash);
 }
 
 static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index)
@@ -165,7 +165,7 @@ static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index)
 static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index)
 {
 	int sel = (index == menu_current->selected);
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sPhosphor Effect: %s%s", (sel) ? "[ " : "",
 			(config.phosphor) ? "On" : "Off",
 			(sel) ? " ]" : "");
@@ -174,7 +174,7 @@ static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index)
 static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index)
 {
 	int sel = (index == menu_current->selected);
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%sAspect: %s%s%s", (sel) ? "[ " : "",
 			(config.stretch & VID_STRETCH)
 			? (config.stretch & VID_STRETCH_ASPECT) ? "Aspect" : "Full"

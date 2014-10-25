@@ -17,14 +17,14 @@ Menu *menu_current = NULL;
 
 void generic_labelDraw(Chip8 *chip, int index)
 {
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			menu_current->entries[index].data);
 }
 
 void generic_buttonDraw(Chip8* chip, int index)
 {
 	int sel = (index == menu_current->selected);
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"%s%s%s", (sel) ? "[ ": "", menu_current->entries[index].data, (sel) ? " ]": "");
 }
 

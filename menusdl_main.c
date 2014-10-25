@@ -66,7 +66,7 @@ Menu menu_mainMenu =
 
 static void mainMenu_statusDraw(Chip8 *chip, int index)
 {
-	font_renderText(FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
 			"Status: %s", (chip->status == CHIP8_PAUSED) ? "paused" : "dead" );
 }
 

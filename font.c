@@ -116,7 +116,7 @@ static int font_getWidth(const char *text, const char *skips)
 		}\
 	}
 
-void font_renderText(int pos, int x, int y, const char *fmt, ...)
+void font_renderText(uint32_t col, int pos, int x, int y, const char *fmt, ...)
 {
 	char text[1024];
 	va_list args;
@@ -177,7 +177,7 @@ void font_renderText(int pos, int x, int y, const char *fmt, ...)
 						continue;
 
 					if ((*(src + (src_pitch * j) + k + cx) & 0x00FFFFFF) == FONT_MASK)
-						*(dst + (dst_pitch * (j + _y)) + k + _x) = config.fgColor;
+						*(dst + (dst_pitch * (j + _y)) + k + _x) = col;
 				}
 			}
 

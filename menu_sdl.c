@@ -15,6 +15,34 @@ static SDL_Surface *prev_screen = NULL;
 
 Menu *menu_current = NULL;
 
+void generic_sliderEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	SLIDER_USERDATA *usr = (SLIDER_USERDATA*)menu_current->entries[index].data;
+	int *val = usr->ptr;
+
+	int mod = (SDL_GetModState() & KMOD_LSHIFT) ? usr->step_m : usr->step;
+	if (ev->type == SDL_KEYDOWN)
+	{
+		if (ev->key.keysym.sym == SDLK_LEFT)
+			*val = (*val - usr->min < mod) ? usr->min : *val - mod;
+		else if (ev->key.keysym.sym == SDLK_RIGHT)
+			*val = (*val + mod > usr->max) ? usr->max : *val + mod;
+	}
+}
+
+void generic_sliderDraw(Chip8 *chip, int index)
+{
+	SLIDER_USERDATA *usr = (SLIDER_USERDATA*)menu_current->entries[index].data;
+	int *val = usr->ptr;
+
+	int sel = (index == menu_current->selected);
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+			"%s%s: %03i%s", (sel) ? "[ " : "",
+			usr->label,
+			*val,
+			(sel) ? " ]" : "");
+}
+
 void generic_labelDraw(Chip8 *chip, int index)
 {
 	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,

@@ -14,10 +14,6 @@
 static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index);
 static void optionsMenu_saveGlobalEv(Chip8* chip, SDL_Event *ev, int index);
 static void optionsMenu_saveGameEv(Chip8* chip, SDL_Event *ev, int index);
-static void optionsMenu_phosphorFadeInDraw(Chip8* chip, int index);
-static void optionsMenu_phosphorFadeInEv(Chip8* chip, SDL_Event *ev, int index);
-static void optionsMenu_phosphorFadeOutDraw(Chip8* chip, int index);
-static void optionsMenu_phosphorFadeOutEv(Chip8* chip, SDL_Event *ev, int index);
 static void optionsMenu_hashDraw(Chip8 *chip, int index);
 static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index);
 static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index);
@@ -53,14 +49,30 @@ Menu menu_optionsMenu = {
 			NULL
 		},
 		{
-			optionsMenu_phosphorFadeInEv,
-			optionsMenu_phosphorFadeInDraw,
-			NULL,
+			generic_sliderEv,
+			generic_sliderDraw,
+			&(struct SLIDER_USERDATA)
+			{
+				.min = 0,
+				.max = 255,
+				.step = 1,
+				.step_m = 5,
+				.ptr = &(config.phosphor_add),
+				.label = "Phosphor Fade In",
+			}
 		},
 		{
-			optionsMenu_phosphorFadeOutEv,
-			optionsMenu_phosphorFadeOutDraw,
-			NULL,
+				generic_sliderEv,
+				generic_sliderDraw,
+				&(struct SLIDER_USERDATA)
+				{
+					.min = 0,
+					.max = 255,
+					.step = 1,
+					.step_m = 5,
+					.ptr = &(config.phosphor_sub),
+					.label = "Phosphor Fade Out",
+				}
 		},
 		{
 			NULL,
@@ -107,48 +119,6 @@ static void optionsMenu_saveGameEv(Chip8* chip, SDL_Event *ev, int index)
 {
 	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
 		config_saveGame(chip, &config);
-}
-
-static void optionsMenu_phosphorFadeInDraw(Chip8* chip, int index)
-{
-	int sel = (index == menu_current->selected);
-	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
-			"%sPhosphor Fade In: %03i%s", (sel) ? "[ " : "",
-			config.phosphor_add,
-			(sel) ? " ]" : "");
-}
-
-static void optionsMenu_phosphorFadeInEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	int mod = (SDL_GetModState() & KMOD_LSHIFT) ? 10 : 1;
-	if (ev->type == SDL_KEYDOWN)
-	{
-		if (ev->key.keysym.sym == SDLK_LEFT)
-			config.phosphor_add = (config.phosphor_add < mod) ? 0 : config.phosphor_add - mod;
-		else if (ev->key.keysym.sym == SDLK_RIGHT)
-			config.phosphor_add = (config.phosphor_add + mod > 255) ? 255 : config.phosphor_add + mod;
-	}
-}
-
-static void optionsMenu_phosphorFadeOutDraw(Chip8* chip, int index)
-{
-	int sel = (index == menu_current->selected);
-	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
-			"%sPhosphor Fade Out: %03i%s", (sel) ? "[ " : "",
-			config.phosphor_sub,
-			(sel) ? " ]" : "");
-}
-
-static void optionsMenu_phosphorFadeOutEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	int mod = (SDL_GetModState() & KMOD_LSHIFT) ? 10 : 1;
-	if (ev->type == SDL_KEYDOWN)
-	{
-		if (ev->key.keysym.sym == SDLK_LEFT)
-			config.phosphor_sub = (config.phosphor_sub < mod) ? 0 : config.phosphor_sub - mod;
-		else if (ev->key.keysym.sym == SDLK_RIGHT)
-			config.phosphor_sub = (config.phosphor_sub + mod > 255) ? 255 : config.phosphor_sub + mod;
-	}
 }
 
 static void optionsMenu_hashDraw(Chip8 *chip, int index)

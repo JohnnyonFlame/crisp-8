@@ -11,14 +11,74 @@
 #include "font.h"
 #include "menu_sdl.h"
 
-static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index);
-static void optionsMenu_saveGlobalEv(Chip8* chip, SDL_Event *ev, int index);
-static void optionsMenu_saveGameEv(Chip8* chip, SDL_Event *ev, int index);
-static void optionsMenu_hashDraw(Chip8 *chip, int index);
-static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index);
-static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index);
-static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index);
-static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index);
+static void optionsMenu_saveGlobalEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		config_saveGlobal(&config);
+}
+
+static void optionsMenu_saveGameEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		config_saveGame(chip, &config);
+}
+
+static void optionsMenu_hashDraw(Chip8 *chip, int index)
+{
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index, "(ROM ID: %08X)", chip->crc_hash);
+}
+
+static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		config.phosphor = !config.phosphor;
+}
+
+static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index)
+{
+	int sel = (index == menu_current->selected);
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+			"%sPhosphor Effect: %s%s", (sel) ? "[ " : "",
+			(config.phosphor) ? "On" : "Off",
+			(sel) ? " ]" : "");
+}
+
+static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index)
+{
+	int sel = (index == menu_current->selected);
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+			"%sAspect: %s%s%s", (sel) ? "[ " : "",
+			(config.stretch & VID_STRETCH)
+			? (config.stretch & VID_STRETCH_ASPECT) ? "Aspect" : "Full"
+			: "Off",
+			(config.stretch & VID_STRETCH_INTEGER) ? " & Integer" : "",
+			(sel) ? " ]" : "");
+}
+
+static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+	{
+		if (config.stretch == (VID_STRETCH | VID_STRETCH_INTEGER))
+			config.stretch = 0;
+		else
+		{
+			if (!config.stretch)
+				config.stretch = VID_STRETCH | VID_STRETCH_ASPECT;
+			else if (config.stretch & VID_STRETCH_INTEGER)
+				config.stretch ^= VID_STRETCH_INTEGER | VID_STRETCH_ASPECT;
+			else
+				config.stretch ^= VID_STRETCH_INTEGER;
+		}
+	}
+
+}
+
+static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		menu_current = &menu_mainMenu;
+}
 
 Menu menu_optionsMenu = {
 	.entries =
@@ -108,72 +168,3 @@ Menu menu_optionsMenu = {
 	},
 	.selected = 3
 };
-
-static void optionsMenu_saveGlobalEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		config_saveGlobal(&config);
-}
-
-static void optionsMenu_saveGameEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		config_saveGame(chip, &config);
-}
-
-static void optionsMenu_hashDraw(Chip8 *chip, int index)
-{
-	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index, "(ROM ID: %08X)", chip->crc_hash);
-}
-
-static void optionsMenu_phosphorSelectEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		config.phosphor = !config.phosphor;
-}
-
-static void optionsMenu_phosphorSelectDraw(Chip8 *chip, int index)
-{
-	int sel = (index == menu_current->selected);
-	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
-			"%sPhosphor Effect: %s%s", (sel) ? "[ " : "",
-			(config.phosphor) ? "On" : "Off",
-			(sel) ? " ]" : "");
-}
-
-static void optionsMenu_scaleSelectDraw(Chip8 *chip, int index)
-{
-	int sel = (index == menu_current->selected);
-	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
-			"%sAspect: %s%s%s", (sel) ? "[ " : "",
-			(config.stretch & VID_STRETCH)
-			? (config.stretch & VID_STRETCH_ASPECT) ? "Aspect" : "Full"
-			: "Off",
-			(config.stretch & VID_STRETCH_INTEGER) ? " & Integer" : "",
-			(sel) ? " ]" : "");
-}
-
-static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-	{
-		if (config.stretch == (VID_STRETCH | VID_STRETCH_INTEGER))
-			config.stretch = 0;
-		else
-		{
-			if (!config.stretch)
-				config.stretch = VID_STRETCH | VID_STRETCH_ASPECT;
-			else if (config.stretch & VID_STRETCH_INTEGER)
-				config.stretch ^= VID_STRETCH_INTEGER | VID_STRETCH_ASPECT;
-			else
-				config.stretch ^= VID_STRETCH_INTEGER;
-		}
-	}
-
-}
-
-static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		menu_current = &menu_mainMenu;
-}

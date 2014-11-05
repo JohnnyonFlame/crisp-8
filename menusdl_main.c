@@ -11,11 +11,40 @@
 #include "font.h"
 #include "menu_sdl.h"
 
-static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index);
-static void mainMenu_statusDraw(Chip8 *chip, int index);
-static void mainMenu_optionsEv(Chip8* chip, SDL_Event *ev, int index);
-static void mainMenu_resetEv(Chip8* chip, SDL_Event *ev, int index);
-static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index);
+static void mainMenu_statusDraw(Chip8 *chip, int index)
+{
+	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
+			"Status: %s", (chip->status == CHIP8_PAUSED) ? "paused" : "dead" );
+}
+
+static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+	{
+		if (chip->status == CHIP8_PAUSED)
+			chip8_invokeEmulator(chip);
+		else
+			chip8_reset(chip);
+	}
+}
+
+static void mainMenu_optionsEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		menu_current = &menu_optionsMenu;
+}
+
+static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		chip->status = CHIP8_EXIT;
+}
+
+static void mainMenu_resetEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		chip8_reset(chip);
+}
 
 Menu menu_mainMenu =
 {
@@ -63,38 +92,3 @@ Menu menu_mainMenu =
 	},
 	.selected = 3
 };
-
-static void mainMenu_statusDraw(Chip8 *chip, int index)
-{
-	font_renderText(config.fgColor, FONT_CENTERED, vid_surface->w/2, font->surface->h * index,
-			"Status: %s", (chip->status == CHIP8_PAUSED) ? "paused" : "dead" );
-}
-
-static void mainMenu_resumeEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-	{
-		if (chip->status == CHIP8_PAUSED)
-			chip8_invokeEmulator(chip);
-		else
-			chip8_reset(chip);
-	}
-}
-
-static void mainMenu_optionsEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		menu_current = &menu_optionsMenu;
-}
-
-static void mainMenu_exitEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		chip->status = CHIP8_EXIT;
-}
-
-static void mainMenu_resetEv(Chip8* chip, SDL_Event *ev, int index)
-{
-	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		chip8_reset(chip);
-}

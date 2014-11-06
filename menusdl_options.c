@@ -77,10 +77,10 @@ static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index)
 static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index)
 {
 	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
-		menu_current = &menu_mainMenu;
+		menu_current = &menu_main;
 }
 
-Menu menu_optionsMenu = {
+Menu menu_options = {
 	.entries =
 	{
 		{

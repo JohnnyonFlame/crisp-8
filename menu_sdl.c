@@ -136,7 +136,7 @@ int  menu_doEvents(Chip8 *chip)
 #define RGBA_LOWERBITS 0xFCFCFCFC
 void menu_invokeMenu()
 {
-	menu_current = &menu_mainMenu;
+	menu_current = &menu_main;
 
 	//We dont want endless annoying sounds, do we?
 	if (beeper_status == BEEPER_LOOPING)

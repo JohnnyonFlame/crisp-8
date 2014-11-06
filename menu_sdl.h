@@ -14,8 +14,8 @@ typedef struct Menu
 	int selected;
 } Menu;
 
-extern Menu menu_mainMenu;
-extern Menu menu_optionsMenu;
+extern Menu menu_main;
+extern Menu menu_options;
 extern Menu *menu_current;
 
 typedef struct SLIDER_USERDATA

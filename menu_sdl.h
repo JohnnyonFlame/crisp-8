@@ -30,5 +30,7 @@ void generic_labelDraw(Chip8* chip, int index);
 void generic_buttonDraw(Chip8* chip, int index);
 void generic_sliderEv(Chip8* chip, SDL_Event *ev, int index);
 void generic_sliderDraw(Chip8 *chip, int index);
+void colorMenu_invokePicker(char *title, int *color);
+void menu_cacheScreen(Chip8 *chip);
 
 #endif //__MENU_SDL_H__/

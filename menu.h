@@ -4,6 +4,6 @@
 int  menu_doEvents();
 void menu_flipSurface();
 void menu_doStep(Chip8 **chip);
-void menu_invokeMenu();
+void menu_invokeMenu(Chip8 *chip);
 
 #endif //__MENU_H__

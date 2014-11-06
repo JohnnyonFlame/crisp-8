@@ -70,8 +70,21 @@ static void optionsMenu_scaleSelectEv(Chip8* chip, SDL_Event *ev, int index)
 			else
 				config.stretch ^= VID_STRETCH_INTEGER;
 		}
-	}
 
+		menu_cacheScreen(chip);
+	}
+}
+
+static void optionsMenu_fgEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		colorMenu_invokePicker("Foreground Color", &config.fgColor);
+}
+
+static void optionsMenu_bgEv(Chip8* chip, SDL_Event *ev, int index)
+{
+	if ((ev->type == SDL_KEYDOWN) && (ev->key.keysym.sym == SDLK_RETURN))
+		colorMenu_invokePicker("Background Color", &config.bgColor);
 }
 
 static void optionsMenu_backEv(Chip8* chip, SDL_Event *ev, int index)
@@ -135,13 +148,13 @@ Menu menu_options = {
 				}
 		},
 		{
-			NULL,
-			generic_labelDraw,
+			optionsMenu_fgEv,
+			generic_buttonDraw,
 			"Foreground Color",
 		},
 		{
-			NULL,
-			generic_labelDraw,
+			optionsMenu_bgEv,
+			generic_buttonDraw,
 			"Background Colour",
 		},
 		{

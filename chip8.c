@@ -253,7 +253,7 @@ uint8_t chip8_doEvents(Chip8 *chip, int wait)
 			case SDLK_ESCAPE:
 				if (ev.type == SDL_KEYDOWN)
 				{
-					menu_invokeMenu();
+					menu_invokeMenu(chip);
 					chip->status = CHIP8_PAUSED;
 				}
 				break;

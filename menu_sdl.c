@@ -134,13 +134,9 @@ int  menu_doEvents(Chip8 *chip)
 }
 
 #define RGBA_LOWERBITS 0xFCFCFCFC
-void menu_invokeMenu()
+void menu_cacheScreen(Chip8 *chip)
 {
-	menu_current = &menu_main;
-
-	//We dont want endless annoying sounds, do we?
-	if (beeper_status == BEEPER_LOOPING)
-		beeper_endLoop();
+	vid_flipSurface(chip);
 
 	//Cache screen
 	if (prev_screen)
@@ -165,7 +161,18 @@ void menu_invokeMenu()
 		}
 		img += pitch;
 	}
+}
 
+
+void menu_invokeMenu(Chip8 *chip)
+{
+	menu_current = &menu_main;
+
+	//We dont want endless annoying sounds, do we?
+	if (beeper_status == BEEPER_LOOPING)
+		beeper_endLoop();
+
+	menu_cacheScreen(chip);
 }
 
 void menu_flipSurface(Chip8 *chip)
